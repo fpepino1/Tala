@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Archives-mobile",
+    "slug": "Archives-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/logo.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/images/4.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0d0d0d"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/8.png",
+        "backgroundColor": "#0d0d0d"
+      }
+    },
+    "web": {
+      "favicon": "./assets/images/5.png"
+    }
+  }
+}
