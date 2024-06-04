@@ -7,7 +7,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AuthNavigator'
 import Logo from '../../components/common/logo';
 
-type LogInScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ProfileSetUp'>;
+type LogInScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ProfileSetUpScreen'>;
 
 type Props = {
   navigation: LogInScreenNavigationProp;
@@ -38,13 +38,12 @@ export default function ProfileSetUpScreen() {
   }
 
   return (
-    <GestureHandlerRootView style={styles.gestureHandlerRoot}>
       <SafeAreaView style={styles.container}>
         <Text style={styles.biggerText}>Finish setting up your account</Text>
         <TouchableOpacity onPress={pickImage}>
           <Image
             resizeMode='contain'
-            source={image ? { uri: image } : require('../../assets/D9D9D9.png')}
+            source={image ? { uri: image } : require('../../assets/images/D9D9D9.png')}
             style={styles.image}
             accessibilityLabel="Profile image"
           />
@@ -61,19 +60,14 @@ export default function ProfileSetUpScreen() {
           <Text style={styles.submitText}>Next</Text>
         </TouchableOpacity>
       </SafeAreaView>
-    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-  gestureHandlerRoot: {
-    flex: 1,
-  },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
     fontFamily: 'Inter_400Regular',
   },
   biggerText: {

@@ -1,38 +1,56 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import RegisterScreen from '../screens/Auth/RegisterScreen';
 import ProfileSetUpScreen from '../screens/Auth/ProfileSetUpScreen';
 
 export type RootStackParamList = {
-  Login: undefined;
-  Register: undefined;
-  ProfileSetUp: undefined;
+  LoginScreen: undefined;
+  RegisterScreen: undefined;
+  ProfileSetUpScreen: undefined;
 };
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export default function AuthNavigator() {
+const AuthNavigator: React.FC = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator>
         <Stack.Screen 
-          name="Login" 
+          name="LoginScreen" 
           component={LoginScreen} 
-          options={{ headerShown: false }} 
-        />
+          options={{
+            headerTitle: '', 
+            headerBackTitleVisible: false, 
+            headerTintColor: '#0d0d0d', 
+            headerTransparent: true,
+            
+          }} />
         <Stack.Screen 
-          name="Register" 
+          name="RegisterScreen" 
           component={RegisterScreen} 
-          options={{ headerShown: false }} 
-        />
+          options={{
+            headerTitle: '', 
+            headerBackTitleVisible: false, 
+            headerTintColor: '#0d0d0d', 
+            headerTransparent: true,
+        }}         />
         <Stack.Screen 
-          name="ProfileSetUp" 
+          name="ProfileSetUpScreen" 
           component={ProfileSetUpScreen} 
-          options={{ headerShown: false }} 
+          options={{
+            headerTitle: '', 
+            headerBackTitleVisible: false, 
+            headerTintColor: '#0d0d0d', 
+            headerTransparent: true,
+            
+          }} 
         />
       </Stack.Navigator>
     </NavigationContainer>
   );
-}
+};
+
+export default AuthNavigator;
+

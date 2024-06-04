@@ -1,36 +1,18 @@
-import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import React from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../navigation/AuthNavigator'
+import { RootStackParamList } from '../../navigation/AuthNavigator';
 import Logo from '../../components/common/logo';
-
-
-type LogInScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
+type LogInScreenNavigationProp = StackNavigationProp<RootStackParamList, 'LoginScreen'>;
 
 type Props = {
   navigation: LogInScreenNavigationProp;
 };
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
-
-  const [value, setValue] = useState({
-    email: "",
-    password: "",
-    error: "" as string | undefined, 
-  });
-
-  const { email, password, error } = value;
-
-  async function signIn() {
-    if (email === "" || password === "") {
-      setValue((prevState) => ({
-        ...prevState,
-        error: "Email and password are mandatory.",
-      }));
-      return;
-    }
-  }
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -39,7 +21,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         style={styles.input}
         placeholder="Username or email"
         value={email}
-        onChangeText={(text) => setValue((prevState) => ({ ...prevState, email: text }))}
+        onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
       />
@@ -47,11 +29,11 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         style={styles.input}
         placeholder="Password"
         value={password}
-        onChangeText={(text) => setValue((prevState) => ({ ...prevState, password: text }))}
+        onChangeText={setPassword}
         secureTextEntry
       />
       <Text style={styles.forgotPasswordText}>Forgot password?</Text>
-      <TouchableOpacity style={styles.submit} onPress={signIn}>
+      <TouchableOpacity style={styles.submit}>
         <Text style={styles.submitText}>Log in</Text>
       </TouchableOpacity>
       <View style={styles.dividerContainer}>
@@ -59,10 +41,9 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         <Text style={styles.orText}>or</Text>
         <View style={styles.divider} />
       </View>
-      <TouchableOpacity style={styles.submit} onPress={() => navigation.navigate('Register')}>
+      <TouchableOpacity style={styles.submit} onPress={() => navigation.navigate('RegisterScreen')}>
         <Text style={styles.submitText}>Create an account</Text>
       </TouchableOpacity>
-      {error && <Text style={styles.errorText}>{error}</Text>}
     </SafeAreaView>
   );
 };
@@ -71,10 +52,9 @@ export default LoginScreen;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     justifyContent: 'center',
-    padding: 16,
-    margin: 20,
+    marginLeft: 50,
+    marginRight: 50,
   },
   input: {
     height: 51,
@@ -106,7 +86,7 @@ const styles = StyleSheet.create({
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 15,
     marginBottom: 20,
   },
   divider: {
