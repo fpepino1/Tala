@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Logo from '../../components/common/logo';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AuthNavigator';
+import { FIREBASE_AUTH } from '../../FirebaseConfig';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'RegisterScreen'>;
 type Props = {
@@ -17,10 +19,28 @@ export default function RegisterScreen({ navigation }: Props) {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = React.useState(false);
+    const auth = FIREBASE_AUTH;
 
-    const handleSignUp = () => {
-        navigation.navigate('ProfileSetUpScreen');
-      };
+  const handleRegister = async () => {
+    setLoading(true);
+    try {
+      const response = await createUserWithEmailAndPassword(auth, email, password);
+      console.log(response);
+      alert('Check your emails for confirmation...');
+      console.log('Navigating to ProfileSetUpScreen');
+      navigation.navigate('ProfileSetUpScreen', { name, username });
+
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log(error);
+        alert('Registration failed: ' + error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -30,6 +50,7 @@ export default function RegisterScreen({ navigation }: Props) {
         placeholder="Name"
         value={name}
         autoCapitalize="none"
+        onChangeText={(text) => setName(text)}
       />
       <TextInput
         style={styles.input}
@@ -37,6 +58,8 @@ export default function RegisterScreen({ navigation }: Props) {
         value={username}
         keyboardType="ascii-capable"
         autoCapitalize="none"
+        onChangeText={(text) => setUsername(text)}
+
       />
       <TextInput
         style={styles.input}
@@ -44,14 +67,16 @@ export default function RegisterScreen({ navigation }: Props) {
         value={email}
         keyboardType="email-address"
         autoCapitalize="none"
+        onChangeText={(text) => setEmail(text)}
       />
       <TextInput
         style={styles.input}
         placeholder="Password"
         value={password}
         secureTextEntry
+        onChangeText={(text) => setPassword(text)}
       />
-      <TouchableOpacity style={styles.submit} onPress={handleSignUp}>
+      <TouchableOpacity style={styles.submit} onPress={handleRegister}>
         <Text style={styles.submitText}>Sign Up</Text>
       </TouchableOpacity>
     </SafeAreaView>

@@ -6,19 +6,26 @@ import * as ImagePicker from 'expo-image-picker';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AuthNavigator'
 import Logo from '../../components/common/logo';
+import { RouteProp } from '@react-navigation/native';
 
-type LogInScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ProfileSetUpScreen'>;
+type ProfileSetUpScreenRouteProp = RouteProp<RootStackParamList, 'ProfileSetUpScreen'>;
+type ProfileSetUpScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ProfileSetUpScreen'>;
 
 type Props = {
-  navigation: LogInScreenNavigationProp;
+  route: ProfileSetUpScreenRouteProp;
+  navigation: ProfileSetUpScreenNavigationProp;
 };
 
-export default function ProfileSetUpScreen() {
+
+export default function ProfileSetUpScreen({ route, navigation }: Props) {
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
   });
 
   const [image, setImage] = useState<string | null>(null);
+  const { name, username } = route.params;
+
+  
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -48,8 +55,8 @@ export default function ProfileSetUpScreen() {
             accessibilityLabel="Profile image"
           />
         </TouchableOpacity>
-        <Text style={[styles.nameText, styles.boldText]}>FARRAH</Text>
-        <Text style={styles.normalText}>farrah_alyssa</Text>
+        <Text style={[styles.nameText, styles.boldText]}>{name}</Text>
+        <Text style={styles.normalText}>{username}</Text>
         <TextInput
           style={styles.input}
           placeholder='Add a bio'

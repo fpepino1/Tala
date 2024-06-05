@@ -4,6 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AuthNavigator';
 import Logo from '../../components/common/logo';
+import { FIREBASE_AUTH } from '../../FirebaseConfig';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 type LogInScreenNavigationProp = StackNavigationProp<RootStackParamList, 'LoginScreen'>;
 
 type Props = {
@@ -13,15 +16,36 @@ type Props = {
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const auth = FIREBASE_AUTH;
+
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      const response = await signInWithEmailAndPassword(auth, email, password);
+      console.log(response);
+      alert('Welcome to Archives!');
+
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log(error);
+        alert('Login failed: ' + error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
   return (
     <SafeAreaView style={styles.container}>
       <Logo />
       <TextInput
         style={styles.input}
-        placeholder="Username or email"
+        placeholder="Email"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(text) => setEmail(text)}
         keyboardType="email-address"
         autoCapitalize="none"
       />
@@ -29,11 +53,11 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         style={styles.input}
         placeholder="Password"
         value={password}
-        onChangeText={setPassword}
-        secureTextEntry
+        onChangeText={(text) => setPassword(text)}
+        secureTextEntry={true}
       />
       <Text style={styles.forgotPasswordText}>Forgot password?</Text>
-      <TouchableOpacity style={styles.submit}>
+      <TouchableOpacity style={styles.submit} onPress={handleLogin}>
         <Text style={styles.submitText}>Log in</Text>
       </TouchableOpacity>
       <View style={styles.dividerContainer}>
@@ -41,7 +65,9 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         <Text style={styles.orText}>or</Text>
         <View style={styles.divider} />
       </View>
-      <TouchableOpacity style={styles.submit} onPress={() => navigation.navigate('RegisterScreen')}>
+      <TouchableOpacity style={styles.submit} 
+      onPress={() => navigation.navigate('RegisterScreen')}
+      >
         <Text style={styles.submitText}>Create an account</Text>
       </TouchableOpacity>
     </SafeAreaView>

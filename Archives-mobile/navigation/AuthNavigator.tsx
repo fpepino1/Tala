@@ -8,9 +8,8 @@ import ProfileSetUpScreen from '../screens/Auth/ProfileSetUpScreen';
 export type RootStackParamList = {
   LoginScreen: undefined;
   RegisterScreen: undefined;
-  ProfileSetUpScreen: undefined;
-};
-
+  ProfileSetUpScreen: { name: string; username: string };
+}
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const AuthNavigator: React.FC = () => {
