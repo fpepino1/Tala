@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { SafeAreaView, Image, TouchableOpacity, Text, StyleSheet, TextInput } from 'react-native';
 import { useFonts, Inter_400Regular } from '@expo-google-fonts/inter';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as ImagePicker from 'expo-image-picker';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../navigation/AuthNavigator'
-import Logo from '../../components/common/logo';
+import { RootStackParamList } from '../../navigation/RootNavigator'
 import { RouteProp } from '@react-navigation/native';
+import Avatar from './Avatar';
+
 
 type ProfileSetUpScreenRouteProp = RouteProp<RootStackParamList, 'ProfileSetUpScreen'>;
 type ProfileSetUpScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ProfileSetUpScreen'>;
@@ -18,12 +18,17 @@ type Props = {
 
 
 export default function ProfileSetUpScreen({ route, navigation }: Props) {
+  const handleNext = async () => {   
+    console.log('Navigating to ProfileScreen');
+    navigation.navigate('ProfileScreen', { name, username, bio });
+  }
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
   });
-
+  const [bio, setBio] = useState('');
   const [image, setImage] = useState<string | null>(null);
   const { name, username } = route.params;
+
 
   
 
@@ -33,10 +38,13 @@ export default function ProfileSetUpScreen({ route, navigation }: Props) {
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
+      base64:true,
+      
     });
 
     if (!result.canceled && result.assets.length > 0) {
       setImage(result.assets[0].uri);
+      console.log(image);
     }
   };
 
@@ -47,24 +55,21 @@ export default function ProfileSetUpScreen({ route, navigation }: Props) {
   return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.biggerText}>Finish setting up your account</Text>
-        <TouchableOpacity onPress={pickImage}>
-          <Image
-            resizeMode='contain'
-            source={image ? { uri: image } : require('../../assets/images/D9D9D9.png')}
-            style={styles.image}
-            accessibilityLabel="Profile image"
-          />
-        </TouchableOpacity>
+        < Avatar />
         <Text style={[styles.nameText, styles.boldText]}>{name}</Text>
         <Text style={styles.normalText}>{username}</Text>
         <TextInput
           style={styles.input}
           placeholder='Add a bio'
           keyboardType="default"
+          value={bio}
           autoCapitalize="sentences"
+          onChangeText={(text) => setBio(text)}
         />
-        <TouchableOpacity style={styles.submit}>
-          <Text style={styles.submitText}>Next</Text>
+        <TouchableOpacity style={styles.submit} 
+  >
+          <Text style={styles.submitText} onPress={handleNext}>    
+            Next</Text>
         </TouchableOpacity>
       </SafeAreaView>
   );

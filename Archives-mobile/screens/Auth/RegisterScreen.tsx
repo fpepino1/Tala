@@ -3,7 +3,7 @@ import { TextInput, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Logo from '../../components/common/logo';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../navigation/AuthNavigator';
+import { RootStackParamList } from '../../navigation/RootNavigator';
 import { FIREBASE_AUTH } from '../../FirebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 
@@ -58,7 +58,7 @@ export default function RegisterScreen({ navigation }: Props) {
         value={username}
         keyboardType="ascii-capable"
         autoCapitalize="none"
-        onChangeText={(text) => setUsername(text)}
+        onChangeText={(text) => setUsername(text.toLowerCase())}
 
       />
       <TextInput
