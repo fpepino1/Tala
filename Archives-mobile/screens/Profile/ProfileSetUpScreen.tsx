@@ -1,86 +1,84 @@
 import React, { useState } from 'react';
-import { SafeAreaView, Image, TouchableOpacity, Text, StyleSheet, TextInput } from 'react-native';
-import { useFonts, Inter_400Regular } from '@expo-google-fonts/inter';
-import * as ImagePicker from 'expo-image-picker';
+import { SafeAreaView, TouchableOpacity, Text, StyleSheet, TextInput } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../navigation/RootNavigator'
 import { RouteProp } from '@react-navigation/native';
+import { RootStackParamList } from '../../navigation/RootNavigator';
 import Avatar from './Avatar';
+import { FIREBASE_DB } from '../../FirebaseConfig';
+import { getFirestore, doc, updateDoc } from 'firebase/firestore';
+import { FIREBASE_AUTH } from '../../FirebaseConfig';
 
-
-type ProfileSetUpScreenRouteProp = RouteProp<RootStackParamList, 'ProfileSetUpScreen'>;
+// Define navigation and route props types
 type ProfileSetUpScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ProfileSetUpScreen'>;
+type ProfileSetUpScreenRouteProp = RouteProp<RootStackParamList, 'ProfileSetUpScreen'> 
 
-type Props = {
-  route: ProfileSetUpScreenRouteProp;
+export type ProfileSetUpScreenProps = {
   navigation: ProfileSetUpScreenNavigationProp;
+  route: ProfileSetUpScreenRouteProp;
 };
 
+const ProfileSetUpScreen: React.FC<ProfileSetUpScreenProps> = ({ navigation, route }) => {
+  const { name, username, bio: initialBio } = route.params; // Destructure bio from route.params
+  const [bio, setBio] = useState(initialBio); // Use initialBio as the initial state for bio
 
-export default function ProfileSetUpScreen({ route, navigation }: Props) {
-  const handleNext = async () => {   
-    console.log('Navigating to ProfileScreen');
-    navigation.navigate('ProfileScreen', { name, username, bio });
-  }
-  const [fontsLoaded] = useFonts({
-    Inter_400Regular,
-  });
-  const [bio, setBio] = useState('');
-  const [image, setImage] = useState<string | null>(null);
-  const { name, username } = route.params;
+  // Get Firestore instance
 
+  // Function to handle 'Update Bio' button press
+  const handleNext = async (username: string, bio: string) => {
+    const ARCHIVES_DB = FIREBASE_DB;
+    const auth = FIREBASE_AUTH;
+    const userId = auth.currentUser?.uid; // Get current user's UID from auth
 
-  
+    if (!userId) {
+      console.error("User not authenticated.");
+      return;
+    }
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-      base64:true,
-      
-    });
+    try {
+      const userDocRef = doc(ARCHIVES_DB, 'users', userId);
 
-    if (!result.canceled && result.assets.length > 0) {
-      setImage(result.assets[0].uri);
-      console.log(image);
+      await updateDoc(userDocRef, {
+        bio: bio,
+      });
+
+      console.log("Bio updated successfully!");
+
+      // Navigate to ProfileScreen with updated data
+      navigation.navigate('ProfileScreen', { name: name, username: username, bio: bio });
+    } catch (error: any) {
+      console.error("Error updating bio: ", error);
+      alert("Error updating bio. Please try again later.");
     }
   };
 
-  if (!fontsLoaded) {
-    return null;
-  }
-
+  // Render UI
   return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.biggerText}>Finish setting up your account</Text>
-        < Avatar />
-        <Text style={[styles.nameText, styles.boldText]}>{name}</Text>
-        <Text style={styles.normalText}>{username}</Text>
-        <TextInput
-          style={styles.input}
-          placeholder='Add a bio'
-          keyboardType="default"
-          value={bio}
-          autoCapitalize="sentences"
-          onChangeText={(text) => setBio(text)}
-        />
-        <TouchableOpacity style={styles.submit} 
-  >
-          <Text style={styles.submitText} onPress={handleNext}>    
-            Next</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.biggerText}>Finish setting up your account</Text>
+      <Avatar />
+      <Text style={[styles.nameText, styles.boldText]}>{name}</Text>
+      <Text style={styles.normalText}>{username}</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Add a bio"
+        keyboardType="default"
+        autoCapitalize="none"
+        value={bio}
+        onChangeText={(text) => setBio(text)}
+      />
+<TouchableOpacity style={styles.submit} onPress={() => handleNext( username, bio)}>
+        <Text style={styles.submitText}>Next</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
   );
-}
+};
 
+// Styles definition
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    fontFamily: 'Inter_400Regular',
   },
   biggerText: {
     fontSize: 20,
@@ -100,15 +98,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   input: {
-  width: '80%',
-  borderRadius: 16,
-  backgroundColor: '#E3E3E3',
-  borderColor: '#E3E3E3',
-  borderWidth: 1,
-  paddingHorizontal: '5%',
-  paddingTop: '5%', 
-  paddingBottom: '19%', 
-  marginBottom: 30,
+    width: '80%',
+    borderRadius: 16,
+    backgroundColor: '#E3E3E3',
+    paddingHorizontal: '5%',
+    paddingTop: '5%',
+    paddingBottom: '19%',
+    marginBottom: 30,
   },
   submit: {
     backgroundColor: '#0d0d0d',
@@ -123,10 +119,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-  image: {
-    width: 130,
-    height: 130,
-    marginBottom: 10,
-    borderRadius: 100,
-  },
 });
+
+export default ProfileSetUpScreen;

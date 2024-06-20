@@ -6,31 +6,44 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/RootNavigator';
 import { FIREBASE_AUTH } from '../../FirebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { getFirestore, Timestamp, doc, setDoc } from 'firebase/firestore';
 
 type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'RegisterScreen'>;
 type Props = {
   navigation: RegisterScreenNavigationProp;
 };
 
-
-
 export default function RegisterScreen({ navigation }: Props) {
-    const [name, setName] = useState('');
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = React.useState(false);
-    const auth = FIREBASE_AUTH;
+  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [bio, setBio] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const auth = FIREBASE_AUTH;
+  const firestore = getFirestore();
 
   const handleRegister = async () => {
     setLoading(true);
     try {
       const response = await createUserWithEmailAndPassword(auth, email, password);
-      console.log(response);
-      alert('Check your emails for confirmation...');
-      console.log('Navigating to ProfileSetUpScreen');
-      navigation.navigate('ProfileSetUpScreen', { name, username });
-
+      
+      if (auth.currentUser?.uid) {
+        const uid = auth.currentUser.uid;
+        await setDoc(doc(firestore, 'users', uid), {
+          name: name,
+          email: email,
+          username: username,
+          bio: bio,
+          createdAt: Timestamp.fromDate(new Date()),
+        });
+        console.log(response);
+        alert('Check your emails for confirmation...');
+        console.log('Navigating to ProfileSetUpScreen');
+        navigation.navigate('ProfileSetUpScreen', { name, username, bio });
+      } else {
+        throw new Error("User ID is undefined");
+      }
     } catch (error) {
       if (error instanceof Error) {
         console.log(error);
@@ -40,7 +53,6 @@ export default function RegisterScreen({ navigation }: Props) {
       setLoading(false);
     }
   };
-
 
   return (
     <SafeAreaView style={styles.container}>
@@ -59,7 +71,6 @@ export default function RegisterScreen({ navigation }: Props) {
         keyboardType="ascii-capable"
         autoCapitalize="none"
         onChangeText={(text) => setUsername(text.toLowerCase())}
-
       />
       <TextInput
         style={styles.input}
@@ -81,7 +92,7 @@ export default function RegisterScreen({ navigation }: Props) {
       </TouchableOpacity>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -115,4 +126,3 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 });
-

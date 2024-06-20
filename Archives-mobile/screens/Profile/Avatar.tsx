@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { SafeAreaView, Image, TouchableOpacity, Text, StyleSheet, TextInput, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as AWS from 'aws-sdk';
 
 export default function Avatar(){
     const [image, setImage] = useState<string | null>(null);
   
-    
+    const handleUpdate = async () => {
+      
+    }
+
   
     const pickImage = async () => {
       let result = await ImagePicker.launchImageLibraryAsync({
@@ -17,13 +21,21 @@ export default function Avatar(){
         
       });
   
+
+  
       if (!result.canceled && result.assets.length > 0) {
         setImage(result.assets[0].uri);
         console.log(image);
       }
     };
   
-   
+   // get secure url from our serve
+
+    // post the image directky to the s3 bucket
+
+    //post request to my server to store
+
+
     return(
         <View>
         <TouchableOpacity onPress={pickImage}>

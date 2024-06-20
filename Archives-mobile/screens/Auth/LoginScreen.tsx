@@ -6,17 +6,23 @@ import { RootStackParamList } from '../../navigation/RootNavigator';
 import Logo from '../../components/common/logo';
 import { FIREBASE_AUTH } from '../../FirebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-type LogInScreenNavigationProp = StackNavigationProp<RootStackParamList, 'LoginScreen'>;
+import { RouteProp } from '@react-navigation/native';
 
-type Props = {
+// Define navigation and route props types
+type LogInScreenNavigationProp = StackNavigationProp<RootStackParamList, 'LoginScreen'>;
+type LoginScreenRouteProp = RouteProp<RootStackParamList, 'LoginScreen'>;
+
+// Combine navigation and route props into a single type
+export type LoginScreenProps = {
   navigation: LogInScreenNavigationProp;
+  route: LoginScreenRouteProp;
 };
 
-const LoginScreen: React.FC<Props> = ({ navigation }) => {
+const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+
   const auth = FIREBASE_AUTH;
 
   const handleLogin = async () => {
@@ -24,8 +30,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     try {
       const response = await signInWithEmailAndPassword(auth, email, password);
       console.log(response);
-      alert('Welcome to Archives!');
-
     } catch (error) {
       if (error instanceof Error) {
         console.log(error);
@@ -35,8 +39,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       setLoading(false);
     }
   };
-
-
 
   return (
     <SafeAreaView style={styles.container}>
@@ -65,8 +67,9 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         <Text style={styles.orText}>or</Text>
         <View style={styles.divider} />
       </View>
-      <TouchableOpacity style={styles.submit} 
-      onPress={() => navigation.navigate('RegisterScreen')}
+      <TouchableOpacity
+        style={styles.submit}
+        onPress={() => navigation.navigate('RegisterScreen')}
       >
         <Text style={styles.submitText}>Create an account</Text>
       </TouchableOpacity>
