@@ -7,8 +7,7 @@ export default function App() {
  
       return (
           <RootNavigator  />   
-      //   <ProfileScreen />
-     // <ProfileSetUpScreen />
+
         );
 
 

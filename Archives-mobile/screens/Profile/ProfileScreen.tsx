@@ -69,7 +69,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollView: {
-    flexGrow: 1,
     justifyContent: 'space-between',
   },
   containerCenter: {
@@ -96,6 +95,11 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#d9d9d9',
     marginVertical: 20,
+  },  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 15,
+    marginBottom: 20,
   },
   loadingContainer: {
     flex: 1,

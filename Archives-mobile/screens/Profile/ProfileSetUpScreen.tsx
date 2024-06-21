@@ -21,10 +21,9 @@ const ProfileSetUpScreen: React.FC<ProfileSetUpScreenProps> = ({ navigation, rou
   const { name, username, bio: initialBio } = route.params; // Destructure bio from route.params
   const [bio, setBio] = useState(initialBio); // Use initialBio as the initial state for bio
 
-  // Get Firestore instance
 
   // Function to handle 'Update Bio' button press
-  const handleNext = async (username: string, bio: string) => {
+  const handleFinish = async (username: string, bio: string) => {
     const ARCHIVES_DB = FIREBASE_DB;
     const auth = FIREBASE_AUTH;
     const userId = auth.currentUser?.uid; // Get current user's UID from auth
@@ -66,8 +65,8 @@ const ProfileSetUpScreen: React.FC<ProfileSetUpScreenProps> = ({ navigation, rou
         value={bio}
         onChangeText={(text) => setBio(text)}
       />
-<TouchableOpacity style={styles.submit} onPress={() => handleNext( username, bio)}>
-        <Text style={styles.submitText}>Next</Text>
+<TouchableOpacity style={styles.submit} onPress={() => handleFinish( username, bio)}>
+        <Text style={styles.submitText}>Finish</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

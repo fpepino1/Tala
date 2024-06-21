@@ -88,7 +88,7 @@ export default function RegisterScreen({ navigation }: Props) {
         onChangeText={(text) => setPassword(text)}
       />
       <TouchableOpacity style={styles.submit} onPress={handleRegister}>
-        <Text style={styles.submitText}>Sign Up</Text>
+        <Text style={styles.submitText}>Sign up</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

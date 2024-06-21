@@ -5,14 +5,14 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/RootNavigator';
 import Logo from '../../components/common/logo';
 import { FIREBASE_AUTH } from '../../FirebaseConfig';
+import { FIREBASE_DB } from '../../FirebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { RouteProp } from '@react-navigation/native';
+import { doc, getDoc } from 'firebase/firestore';
 
-// Define navigation and route props types
 type LogInScreenNavigationProp = StackNavigationProp<RootStackParamList, 'LoginScreen'>;
 type LoginScreenRouteProp = RouteProp<RootStackParamList, 'LoginScreen'>;
 
-// Combine navigation and route props into a single type
 export type LoginScreenProps = {
   navigation: LogInScreenNavigationProp;
   route: LoginScreenRouteProp;
@@ -23,18 +23,36 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
 
-  const auth = FIREBASE_AUTH;
 
+ const auth = FIREBASE_AUTH;
+  const ARCHIVES_DB = FIREBASE_DB;
   const handleLogin = async () => {
     setLoading(true);
     try {
       const response = await signInWithEmailAndPassword(auth, email, password);
-      console.log(response);
-    } catch (error) {
-      if (error instanceof Error) {
-        console.log(error);
-        alert('Login failed: ' + error.message);
+      console.log('User logged in:', response.user);
+
+      // Fetch user data from Firestore using UID
+      const userId = response.user.uid;
+      const userDocRef = doc(ARCHIVES_DB, 'users', userId);
+      const docSnap = await getDoc(userDocRef);
+
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        console.log('User data:', userData);
+
+        // Navigate to ProfileScreen with user data
+        navigation.navigate('ProfileScreen', {
+          name: userData.name,
+          username: userData.username,
+          bio: userData.bio,
+        });      } else {
+        console.log('No such document!');
+        alert('User data not found.');
       }
+    } catch (error:any) {
+      console.error('Login failed:', error.message);
+      alert('Login failed: ' + error.message);
     } finally {
       setLoading(false);
     }
