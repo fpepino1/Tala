@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, ScrollView, View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import Avatar from "./Avatar";
-import ProfileStats from "./ProfileStats";
-import { UserData } from "./UserData"; // Assuming UserData function is correctly defined
+import { SafeAreaView, ScrollView, View, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
+import { fetchUserData, UserData } from "./UserData"; // Import the correct function and type
 import { getAuth } from 'firebase/auth';
 import { FIREBASE_DB } from '../../FirebaseConfig';
+import ProfileStats from "./ProfileStats";
 
 const ProfileScreen: React.FC = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -17,7 +16,7 @@ const ProfileScreen: React.FC = () => {
       try {
         const uid = auth.currentUser?.uid; // Get the authenticated user's UID
         if (uid) {
-          const data = await UserData(uid); // Call function to fetch user data
+          const data = await fetchUserData(uid); // Call the function to fetch user data
           setUserData(data);
         } else {
           console.error('User not authenticated.');
@@ -52,11 +51,16 @@ const ProfileScreen: React.FC = () => {
     <SafeAreaView style={styles.safeAreaView}>
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.containerCenter}>
-          <Avatar />
+          <Image
+            resizeMode='contain'
+            source={{ uri: userData.photoUrl }}
+            style={styles.image}
+            accessibilityLabel="Profile image"
+          />
           <Text style={[styles.nameText, styles.boldText]}>{userData.name}</Text>
-          <Text style={styles.normalText}>{userData.username}</Text>
+          <Text style={{ ...styles.normalText, opacity: 0.6 }}>{userData.username}</Text>
           <Text style={styles.bioText}>{userData.bio}</Text>
-          <ProfileStats />
+          <ProfileStats/>
         </View>
         <View style={styles.divider} />
       </ScrollView>
@@ -67,9 +71,11 @@ const ProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeAreaView: {
     flex: 1,
+    marginTop:100,
   },
   scrollView: {
     justifyContent: 'space-between',
+    
   },
   containerCenter: {
     alignItems: 'center',
@@ -87,19 +93,14 @@ const styles = StyleSheet.create({
   },
   bioText: {
     fontSize: 16,
-    marginTop: 10,
-    marginBottom: 20,
+    marginTop: 20,
+    marginBottom: 15,
     textAlign: 'center',
   },
   divider: {
     height: 1,
     backgroundColor: '#d9d9d9',
     marginVertical: 20,
-  },  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 15,
-    marginBottom: 20,
   },
   loadingContainer: {
     flex: 1,
@@ -110,6 +111,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
+  },
+  image: {
+    width: 130,
+    height: 130,
+    marginBottom: 10,
+    borderRadius: 100,
   },
 });
 

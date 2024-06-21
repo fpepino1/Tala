@@ -1,5 +1,5 @@
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
-import { FIREBASE_AUTH } from '../../FirebaseConfig';// Adjust the path as per your project structure
+import { FIREBASE_AUTH } from '../../FirebaseConfig'; // Adjust the path as per your project structure
 
 export interface UserData {
   name: string;
@@ -7,11 +7,11 @@ export interface UserData {
   email: string;
   createdAt: Date;
   bio: string; 
+  photoUrl: string;
 }
 
-
 // Function to fetch user data by UID
-export const UserData = async (uid: string): Promise<UserData | null> => {
+export const fetchUserData = async (uid: string): Promise<UserData | null> => {
   const firestore = getFirestore();
   const userRef = doc(firestore, 'users', uid);
 
@@ -26,6 +26,7 @@ export const UserData = async (uid: string): Promise<UserData | null> => {
         email: userData.email,
         createdAt: userData.createdAt.toDate(), 
         bio: userData.bio,
+        photoUrl: userData.photoUrl || ''
       } as UserData;
     } else {
       console.log('No such document!');
@@ -36,3 +37,4 @@ export const UserData = async (uid: string): Promise<UserData | null> => {
     return null;
   }
 };
+
