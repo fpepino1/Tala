@@ -9,7 +9,6 @@ import { LoginScreenProps } from '../../navigation/types';
 import { doc, getDoc } from 'firebase/firestore';
 
 
-
 export default function LoginScreen ({ navigation, route }: LoginScreenProps) {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
