@@ -29,13 +29,10 @@ export default function ProfileSetUpScreen({navigation, route}: ProfileSetUpScre
       });
 
       console.log("Bio updated successfully!");
-      alert("Welcome to Archives! You're officially in!");
 
       navigation.navigate('ProfileScreen', { name: name, username: username, bio: bio });
     } catch (error: any) {
-      console.error("Error updating bio: ", error);
-      alert("Error updating bio. Please try again later.");
-    }
+      console.error("Error updating bio: ", error);    }
   };
 
   return (

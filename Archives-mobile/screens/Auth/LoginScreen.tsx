@@ -8,12 +8,10 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { LoginScreenProps } from '../../navigation/types';
 import { doc, getDoc } from 'firebase/firestore';
 
-
 export default function LoginScreen ({ navigation, route }: LoginScreenProps) {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
-
 
  const auth = FIREBASE_AUTH;
   const ARCHIVES_DB = FIREBASE_DB;
@@ -36,7 +34,7 @@ export default function LoginScreen ({ navigation, route }: LoginScreenProps) {
           username: userData.username,
           bio: userData.bio,
         });      } else {
-        console.log('No such document!');
+        console.log('No such document.');
         alert('User data not found.');
       }
     } catch (error:any) {

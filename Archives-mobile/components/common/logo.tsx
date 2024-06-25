@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 
-const Logo: React.FC = () => {
+export default function Logo(){
   return (
     <View style={styles.container}>
       <Image source={require('../../assets/images/2.png')} style={styles.logo} />
@@ -9,7 +9,6 @@ const Logo: React.FC = () => {
   );
 };
 
-export default Logo;
 
 const styles = StyleSheet.create({
   container: {

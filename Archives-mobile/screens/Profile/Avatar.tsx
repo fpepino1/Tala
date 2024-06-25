@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, Image, TouchableOpacity, Text, StyleSheet, View } from 'react-native';
+import { Image, TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { FIREBASE_DB, FIREBASE_STORAGE, FIREBASE_AUTH } from '../../FirebaseConfig';
@@ -10,6 +10,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 export default function Avatar() {
     const [image, setImage] = useState<string | null>(null);
     const [user, setUser] = useState(FIREBASE_AUTH.currentUser);
+    const [progress, setProgress] = useState(0); // Moved useState outside
 
     useEffect(() => {
         const unsubscribeAuth = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
@@ -64,11 +65,10 @@ export default function Avatar() {
             const uploadTask = uploadBytesResumable(storageRef, blob);
 
             return new Promise((resolve, reject) => {
-                var [progress, setProgress] = useState(0);
                 uploadTask.on(
                     "state_changed",
                     (snapshot) => {
-                        progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                         console.log(`Upload is ${progress}% done`);
                         setProgress(Math.round(progress)); 
                     },
