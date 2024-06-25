@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
-const ProfileStats = () => {
+export default function ProfileStats () {
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.stat}>
@@ -9,11 +9,11 @@ const ProfileStats = () => {
         <Text>posts</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.stat}>
-        <Text style={styles.boldText}>108</Text>
+        <Text style={styles.boldText}>0</Text>
         <Text>following</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.stat}>
-        <Text style={styles.boldText}>108</Text>
+        <Text style={styles.boldText}>0</Text>
         <Text>followers</Text>
       </TouchableOpacity>
     </View>
@@ -37,4 +37,3 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProfileStats;

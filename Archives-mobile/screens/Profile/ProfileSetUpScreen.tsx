@@ -1,32 +1,20 @@
 import React, { useState } from 'react';
 import { SafeAreaView, TouchableOpacity, Text, StyleSheet, TextInput } from 'react-native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from '../../navigation/RootNavigator';
 import Avatar from './Avatar';
 import { FIREBASE_DB } from '../../FirebaseConfig';
-import { getFirestore, doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { FIREBASE_AUTH } from '../../FirebaseConfig';
-
-// Define navigation and route props types
-type ProfileSetUpScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ProfileSetUpScreen'>;
-type ProfileSetUpScreenRouteProp = RouteProp<RootStackParamList, 'ProfileSetUpScreen'> 
-
-export type ProfileSetUpScreenProps = {
-  navigation: ProfileSetUpScreenNavigationProp;
-  route: ProfileSetUpScreenRouteProp;
-};
-
-const ProfileSetUpScreen: React.FC<ProfileSetUpScreenProps> = ({ navigation, route }) => {
-  const { name, username, bio: initialBio } = route.params; // Destructure bio from route.params
-  const [bio, setBio] = useState(initialBio); // Use initialBio as the initial state for bio
+import { ProfileSetUpScreenProps } from '../../navigation/types';
 
 
-  // Function to handle 'Update Bio' button press
+export default function ProfileSetUpScreen({navigation, route}: ProfileSetUpScreenProps){
+  const { name, username, bio: initialBio } = route.params; 
+  const [bio, setBio] = useState(initialBio); 
+
   const handleFinish = async (username: string, bio: string) => {
     const ARCHIVES_DB = FIREBASE_DB;
     const auth = FIREBASE_AUTH;
-    const userId = auth.currentUser?.uid; // Get current user's UID from auth
+    const userId = auth.currentUser?.uid;
 
     if (!userId) {
       console.error("User not authenticated.");
@@ -41,8 +29,8 @@ const ProfileSetUpScreen: React.FC<ProfileSetUpScreenProps> = ({ navigation, rou
       });
 
       console.log("Bio updated successfully!");
+      alert("Welcome to Archives! You're officially in!");
 
-      // Navigate to ProfileScreen with updated data
       navigation.navigate('ProfileScreen', { name: name, username: username, bio: bio });
     } catch (error: any) {
       console.error("Error updating bio: ", error);
@@ -50,7 +38,6 @@ const ProfileSetUpScreen: React.FC<ProfileSetUpScreenProps> = ({ navigation, rou
     }
   };
 
-  // Render UI
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.biggerText}>Finish setting up your account</Text>
@@ -72,7 +59,6 @@ const ProfileSetUpScreen: React.FC<ProfileSetUpScreenProps> = ({ navigation, rou
   );
 };
 
-// Styles definition
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -119,5 +105,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
-export default ProfileSetUpScreen;

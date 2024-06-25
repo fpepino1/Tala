@@ -1,16 +1,7 @@
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
-import { FIREBASE_AUTH } from '../../FirebaseConfig'; // Adjust the path as per your project structure
+import { UserData } from '../../navigation/types';
 
-export interface UserData {
-  name: string;
-  username: string;
-  email: string;
-  createdAt: Date;
-  bio: string; 
-  photoUrl: string;
-}
 
-// Function to fetch user data by UID
 export const fetchUserData = async (uid: string): Promise<UserData | null> => {
   const firestore = getFirestore();
   const userRef = doc(firestore, 'users', uid);

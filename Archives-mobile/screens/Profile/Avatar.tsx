@@ -4,12 +4,11 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { FIREBASE_DB, FIREBASE_STORAGE, FIREBASE_AUTH } from '../../FirebaseConfig';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { doc, setDoc, getFirestore } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 export default function Avatar() {
     const [image, setImage] = useState<string | null>(null);
-    const [progress, setProgress] = useState(0);
     const [user, setUser] = useState(FIREBASE_AUTH.currentUser);
 
     useEffect(() => {
@@ -65,12 +64,13 @@ export default function Avatar() {
             const uploadTask = uploadBytesResumable(storageRef, blob);
 
             return new Promise((resolve, reject) => {
+                var [progress, setProgress] = useState(0);
                 uploadTask.on(
                     "state_changed",
                     (snapshot) => {
-                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                         console.log(`Upload is ${progress}% done`);
-                        setProgress(Math.round(progress)); // Ensure progress is a number
+                        setProgress(Math.round(progress)); 
                     },
                     (error: any) => {
                         console.error("Upload failed: ", error);

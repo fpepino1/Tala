@@ -1,24 +1,16 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../navigation/RootNavigator';
 import Logo from '../../components/common/logo';
 import { FIREBASE_AUTH } from '../../FirebaseConfig';
 import { FIREBASE_DB } from '../../FirebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { RouteProp } from '@react-navigation/native';
+import { LoginScreenProps } from '../../navigation/types';
 import { doc, getDoc } from 'firebase/firestore';
 
-type LogInScreenNavigationProp = StackNavigationProp<RootStackParamList, 'LoginScreen'>;
-type LoginScreenRouteProp = RouteProp<RootStackParamList, 'LoginScreen'>;
 
-export type LoginScreenProps = {
-  navigation: LogInScreenNavigationProp;
-  route: LoginScreenRouteProp;
-};
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
+export default function LoginScreen ({ navigation, route }: LoginScreenProps) {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
@@ -32,7 +24,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
       const response = await signInWithEmailAndPassword(auth, email, password);
       console.log('User logged in:', response.user);
 
-      // Fetch user data from Firestore using UID
       const userId = response.user.uid;
       const userDocRef = doc(ARCHIVES_DB, 'users', userId);
       const docSnap = await getDoc(userDocRef);
@@ -41,7 +32,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
         const userData = docSnap.data();
         console.log('User data:', userData);
 
-        // Navigate to ProfileScreen with user data
         navigation.navigate('ProfileScreen', {
           name: userData.name,
           username: userData.username,
@@ -95,7 +85,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
   );
 };
 
-export default LoginScreen;
 
 const styles = StyleSheet.create({
   container: {

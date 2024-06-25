@@ -6,21 +6,9 @@ import LoginScreen from '../screens/Auth/LoginScreen';
 import RegisterScreen from '../screens/Auth/RegisterScreen';
 import ProfileSetUpScreen from '../screens/Profile/ProfileSetUpScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
-import Icon from 'react-native-vector-icons/MaterialIcons'; 
-
-export type RootStackParamList = {
-  Profile: { name: string; username: string; bio: string };
-  ProfileSetUpScreen: { name: string; username: string; bio: string };
-  LoginScreen: { name: string; username: string };
-  RegisterScreen: undefined;
-  ProfileScreen: { name: string; username: string; bio: string };
-};
+import { RootStackParamList, CloseButtonProps } from './types';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
-
-type CloseButtonProps = {
-  navigation: NativeStackNavigationProp<RootStackParamList>;
-};
 
 const CloseButton: React.FC<CloseButtonProps> = ({ navigation }) => {
   return (
@@ -30,7 +18,8 @@ const CloseButton: React.FC<CloseButtonProps> = ({ navigation }) => {
   );
 };
 
-const RootNavigator: React.FC = () => {
+export default function RootNavigator(){
+
   return (
     <NavigationContainer>
       <RootStack.Navigator
@@ -59,13 +48,14 @@ const RootNavigator: React.FC = () => {
           name="ProfileSetUpScreen" 
           component={ProfileSetUpScreen} 
           options={({ navigation }) => ({
+            headerLeftShown: false,
+            headerBackVisible: false, 
             headerRight: () => <CloseButton navigation={navigation} />,
           })}
         />
       </RootStack.Navigator>
     </NavigationContainer>
   );
-};
 
-export default RootNavigator;
 
+        }

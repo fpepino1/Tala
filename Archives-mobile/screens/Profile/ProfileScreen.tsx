@@ -1,22 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { SafeAreaView, ScrollView, View, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
-import { fetchUserData, UserData } from "./UserData"; // Import the correct function and type
+import { fetchUserData } from "./UserData"; // Import the correct function and type
 import { getAuth } from 'firebase/auth';
-import { FIREBASE_DB } from '../../FirebaseConfig';
 import ProfileStats from "./ProfileStats";
+import { UserData } from "../../navigation/types";
 
-const ProfileScreen: React.FC = () => {
+export default function ProfileScreen(){
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+  const defaultPhoto = require('../../assets/images/D9D9D9.png');
+
 
   useEffect(() => {
     const loadUserData = async () => {
-      const auth = getAuth(); // Correctly initialize auth instance
+      const auth = getAuth(); 
 
       try {
-        const uid = auth.currentUser?.uid; // Get the authenticated user's UID
+        const uid = auth.currentUser?.uid;
         if (uid) {
-          const data = await fetchUserData(uid); // Call the function to fetch user data
+          const data = await fetchUserData(uid); 
           setUserData(data);
         } else {
           console.error('User not authenticated.');
@@ -24,7 +26,7 @@ const ProfileScreen: React.FC = () => {
       } catch (error) {
         console.error('Error loading user data:', error);
       } finally {
-        setLoading(false); // Always set loading to false when done (success or error)
+        setLoading(false);
       }
     };
 
@@ -53,13 +55,13 @@ const ProfileScreen: React.FC = () => {
         <View style={styles.containerCenter}>
           <Image
             resizeMode='contain'
-            source={{ uri: userData.photoUrl }}
+            source={userData.photoUrl ? { uri: userData.photoUrl } : defaultPhoto}
             style={styles.image}
             accessibilityLabel="Profile image"
           />
           <Text style={[styles.nameText, styles.boldText]}>{userData.name}</Text>
           <Text style={{ ...styles.normalText, opacity: 0.6 }}>{userData.username}</Text>
-          <Text style={styles.bioText}>{userData.bio}</Text>
+          <Text style={[styles.bioText, styles.bioContainer]}>{userData.bio}</Text>
           <ProfileStats/>
         </View>
         <View style={styles.divider} />
@@ -112,6 +114,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
+  bioContainer:{
+    marginLeft:50,
+    marginRight: 50,
+  },
   image: {
     width: 130,
     height: 130,
@@ -120,4 +126,3 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProfileScreen;
