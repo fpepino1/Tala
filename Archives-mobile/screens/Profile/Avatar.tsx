@@ -10,7 +10,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 export default function Avatar() {
     const [image, setImage] = useState<string | null>(null);
     const [user, setUser] = useState(FIREBASE_AUTH.currentUser);
-    const [progress, setProgress] = useState(0); // Moved useState outside
+    const [progress, setProgress] = useState(0); 
 
     useEffect(() => {
         const unsubscribeAuth = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
@@ -121,7 +121,7 @@ export default function Avatar() {
             </TouchableOpacity>
         </View>
     );
-}
+} 
 
 const styles = StyleSheet.create({
     image: {

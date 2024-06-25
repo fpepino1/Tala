@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { SafeAreaView, ScrollView, View, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
-import { fetchUserData } from "./UserData"; // Import the correct function and type
+import { fetchUserData } from "./UserData";
 import { getAuth } from 'firebase/auth';
 import ProfileStats from "./ProfileStats";
 import { UserData } from "../../navigation/types";
