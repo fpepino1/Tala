@@ -25,8 +25,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     flexDirection: 'row',
-    width: '75%', 
-    padding: 16, 
+    width: '80%', 
+    padding: 20, 
+    paddingBottom:40,
   },
   stat: {
     justifyContent: 'center',

@@ -4,14 +4,21 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 
 
-export type RootStackParamList = {
+
+export type BottomTabParamList = {
+  ProfileScreen: { name: string; username: string; bio: string };
+  SettingsScreen:undefined;
+};
+
+export type AppStackParamList = {
     Profile: { name: string; username: string; bio: string };
     ProfileSetUpScreen: { name: string; username: string; bio: string };
     LoginScreen: { name: string; username: string };
     RegisterScreen: undefined;
     ProfileScreen: { name: string; username: string; bio: string };
+    TabsNavigator: undefined;
   };
-export type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'RegisterScreen'>;
+export type RegisterScreenNavigationProp = StackNavigationProp<AppStackParamList, 'RegisterScreen'>;
 export type RegisterScreenProps = {
     navigation: RegisterScreenNavigationProp;
   };
@@ -23,8 +30,8 @@ export type RegisterScreenProps = {
     bio: string; 
     photoUrl: string;
   }
- export type LogInScreenNavigationProp = StackNavigationProp<RootStackParamList, 'LoginScreen'>;
-  export type LoginScreenRouteProp = RouteProp<RootStackParamList, 'LoginScreen'>;
+ export type LogInScreenNavigationProp = StackNavigationProp<AppStackParamList, 'LoginScreen'>;
+  export type LoginScreenRouteProp = RouteProp<AppStackParamList, 'LoginScreen'>;
   
   export type LoginScreenProps = {
     navigation: LogInScreenNavigationProp;
@@ -32,11 +39,11 @@ export type RegisterScreenProps = {
   };
   
   export type CloseButtonProps = {
-    navigation: NativeStackNavigationProp<RootStackParamList>;
+    navigation: NativeStackNavigationProp<AppStackParamList>;
   };
 
-  export type ProfileSetUpScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ProfileSetUpScreen'>;
-  export type ProfileSetUpScreenRouteProp = RouteProp<RootStackParamList, 'ProfileSetUpScreen'> 
+  export type ProfileSetUpScreenNavigationProp = StackNavigationProp<AppStackParamList, 'ProfileSetUpScreen'>;
+  export type ProfileSetUpScreenRouteProp = RouteProp<AppStackParamList, 'ProfileSetUpScreen'> 
   
   export type ProfileSetUpScreenProps = {
     navigation: ProfileSetUpScreenNavigationProp;

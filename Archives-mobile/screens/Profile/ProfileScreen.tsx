@@ -4,8 +4,9 @@ import { fetchUserData } from "./UserData";
 import { getAuth } from 'firebase/auth';
 import ProfileStats from "./ProfileStats";
 import { UserData } from "../../navigation/types";
-
+import PostGrid from "../Posts/PostGrid";
 export default function ProfileScreen(){
+  
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const defaultPhoto = require('../../assets/images/D9D9D9.png');
@@ -50,13 +51,12 @@ export default function ProfileScreen(){
   }
 
   return (
-    <SafeAreaView style={styles.safeAreaView}>
-      <ScrollView contentContainerStyle={styles.scrollView}>
+      <ScrollView>
         <View style={styles.containerCenter}>
           <Image
             resizeMode='contain'
             source={userData.photoUrl ? { uri: userData.photoUrl } : defaultPhoto}
-            style={styles.image}
+            style={styles.profile}
             accessibilityLabel="Profile image"
           />
           <Text style={[styles.nameText, styles.boldText]}>{userData.name}</Text>
@@ -64,24 +64,19 @@ export default function ProfileScreen(){
           <Text style={[styles.bioText, styles.bioContainer]}>{userData.bio}</Text>
           <ProfileStats/>
         </View>
-        <View style={styles.divider} />
-      </ScrollView>
-    </SafeAreaView>
+        {/* <View style={styles.divider} /> */}
+        <PostGrid />
+       </ScrollView>
+      
+     
   );
 }
 
 const styles = StyleSheet.create({
-  safeAreaView: {
-    flex: 1,
-    marginTop:100,
-  },
-  scrollView: {
-    justifyContent: 'space-between',
-    
-  },
+ 
   containerCenter: {
     alignItems: 'center',
-    padding: 20,
+    marginTop:100,
   },
   nameText: {
     fontSize: 24,
@@ -102,7 +97,7 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: '#d9d9d9',
-    marginVertical: 20,
+    marginVertical: 0,
   },
   loadingContainer: {
     flex: 1,
@@ -112,13 +107,12 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
-    flex: 1,
   },
   bioContainer:{
     marginLeft:50,
     marginRight: 50,
   },
-  image: {
+  profile: {
     width: 130,
     height: 130,
     marginBottom: 10,
