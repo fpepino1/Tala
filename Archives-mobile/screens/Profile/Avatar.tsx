@@ -61,7 +61,7 @@ export default function Avatar() {
                 xhr.send(null);
             });
 
-            const storageRef = ref(FIREBASE_STORAGE, `Users/ProfileImage${new Date().getTime()}`);
+            const storageRef = ref(FIREBASE_STORAGE, `users/${user.uid}/profile_pictures/ProfileImage_${new Date().getTime()}.jpg`);
             const uploadTask = uploadBytesResumable(storageRef, blob);
 
             return new Promise((resolve, reject) => {
