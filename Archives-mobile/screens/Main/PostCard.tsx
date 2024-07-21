@@ -70,6 +70,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 }, 
     shadowOpacity: 0, 
     shadowRadius: 0, 
+ 
   },
   imageContainer: {
     width: '100%',

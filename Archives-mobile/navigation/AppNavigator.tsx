@@ -4,11 +4,9 @@ import { TouchableOpacity, Text } from 'react-native';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import RegisterScreen from '../screens/Auth/RegisterScreen';
 import ProfileSetUpScreen from '../screens/Main/ProfileSetUpScreen';
-import ProfileScreen from '../screens/Main/ProfileScreen';
 import { AppStackParamList, CloseButtonProps } from './types';
 import { NavigationContainer } from '@react-navigation/native';
 import MainTabNavigator from './MainTabNavigator';
-import PostCard from '../screens/Main/PostCard';
 const AppStack = createNativeStackNavigator<AppStackParamList>();
 
 const CloseButton: React.FC<CloseButtonProps> = ({ navigation }) => {

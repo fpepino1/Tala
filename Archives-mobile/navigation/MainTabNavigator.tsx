@@ -4,6 +4,7 @@ import ProfileScreen from '../screens/Main/ProfileScreen';
 import FeedScreen from '../screens/Main/Feed';
 import { RootTabParamList } from './types';
 import Post from '../screens/Posts/Post';
+import PostDetailScreen from '../screens/Main/PostDetailScreen';
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
 
@@ -34,6 +35,7 @@ export default function MainTabNavigator() {
         component={ProfileScreen}
         options={{ title: 'Profile' }}
       />
+
     </Tab.Navigator>
   );
 }

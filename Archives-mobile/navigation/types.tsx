@@ -4,16 +4,15 @@ import { RouteProp } from '@react-navigation/native';
 
 
 
-
 export type AppStackParamList = {
-    Profile: { name: string; username: string; bio: string };
-    ProfileSetUpScreen: { name: string; username: string; bio: string };
-    LoginScreen: { name: string; username: string };
-    RegisterScreen: undefined;
-    ProfileScreen: { name: string; username: string; bio: string };
-    MainTabNavigator: { screen: string; params: { name: string; username: string; bio: string; } } | undefined;
-    Feed:undefined
-  };
+  Profile: { name: string; username: string; bio: string };
+  ProfileSetUpScreen: { name: string; username: string; bio: string };
+  LoginScreen: { name: string; username: string };
+  RegisterScreen: undefined;
+  ProfileScreen: { name: string; username: string; bio: string };
+  MainTabNavigator: { screen: string; params: { name: string; username: string; bio: string; } } | undefined;
+  Feed: undefined;
+};
 
 
   export interface PostData {
@@ -24,7 +23,9 @@ export type AppStackParamList = {
     ProfileScreen: { name: string; username: string; bio: string };
     Feed: undefined;
     Post:undefined;
+
   };
+
 export type RegisterScreenNavigationProp = StackNavigationProp<AppStackParamList, 'RegisterScreen'>;
 export type RegisterScreenProps = {
     navigation: RegisterScreenNavigationProp;

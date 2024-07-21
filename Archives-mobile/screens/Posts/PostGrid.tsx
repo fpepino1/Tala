@@ -4,6 +4,8 @@ import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+
 
 const numColumns = 3;
 const screenWidth = Dimensions.get('window').width;
@@ -13,6 +15,7 @@ const PostGrid = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const navigation = useNavigation<PostGridNavigationProp>();
 
   const fetchPosts = useCallback(async () => {
     if (userId) {
@@ -56,6 +59,7 @@ const PostGrid = () => {
 
   const handlePress = (item) => {
     console.log('Item pressed:', item);
+    navigation.navigate('PostDetailScreen', { postId: item.id });
   };
 
   const renderItem = ({ item }) => (
