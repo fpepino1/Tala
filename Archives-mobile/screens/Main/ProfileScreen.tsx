@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bioContainer:{
-    marginLeft:50,
+    marginLeft:40,
     marginRight: 50,
   },
   profile: {

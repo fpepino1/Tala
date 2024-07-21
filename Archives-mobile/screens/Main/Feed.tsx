@@ -1,18 +1,20 @@
 import React from 'react';
-import { SafeAreaView, Text, StyleSheet } from 'react-native';
-
+import { ScrollView, Text, StyleSheet } from 'react-native';
+import PostCard from './PostCard';
 export default function FeedScreen() {
+  const userId = 'DuqXbPpXd0fDUIB8oPMoOPkN6053'; 
+  const postId = 'fIHaxw74eej8FfeJtWBD'; 
+
   return (
-    <SafeAreaView style={styles.container}>
-      <Text>Feed Screen</Text>
-    </SafeAreaView>
+    <ScrollView style={styles.container}>
+      <PostCard uid={userId}  postId={postId} />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginTop: '20%',
+    flexGrow:1,
   },
 });

@@ -8,7 +8,7 @@ import ProfileScreen from '../screens/Main/ProfileScreen';
 import { AppStackParamList, CloseButtonProps } from './types';
 import { NavigationContainer } from '@react-navigation/native';
 import MainTabNavigator from './MainTabNavigator';
-
+import PostCard from '../screens/Main/PostCard';
 const AppStack = createNativeStackNavigator<AppStackParamList>();
 
 const CloseButton: React.FC<CloseButtonProps> = ({ navigation }) => {
@@ -46,6 +46,7 @@ export default function AppNavigator() {
           component={MainTabNavigator} 
           options={{ headerShown: false }}
         />
+        
       </AppStack.Navigator>
     </NavigationContainer>
   );

@@ -16,7 +16,10 @@ export type AppStackParamList = {
   };
 
 
-
+  export interface PostData {
+    postImage: string;
+    description: string;
+  }
   export type RootTabParamList = {
     ProfileScreen: { name: string; username: string; bio: string };
     Feed: undefined;

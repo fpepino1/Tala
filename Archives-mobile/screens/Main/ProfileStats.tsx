@@ -69,12 +69,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     width: '80%',
-    padding: 20,
-    paddingBottom: 40,
+  
+    paddingTop:20,
+    paddingBottom: 50,
   },
   stat: {
     justifyContent: 'center',
     alignItems: 'center',
+    paddingLeft:30,
+    paddingRight: 40,
+
   },
   boldText: {
     fontWeight: 'bold',
