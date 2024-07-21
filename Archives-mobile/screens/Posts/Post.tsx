@@ -14,7 +14,7 @@ const Post = ({ navigation }) => {
     const [image, setImage] = useState<string | null>(null);
     const [progress, setProgress] = useState(0);
     const [description, setDescription] = useState("");
-    const [loading, setLoading] = useState(false); // For loading indicator
+    const [loading, setLoading] = useState(false); 
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -90,7 +90,7 @@ const Post = ({ navigation }) => {
             return;
         }
 
-        setLoading(true); // Start loading indicator
+        setLoading(true);
 
         const downloadURL = await uploadImage(image);
         if (downloadURL && user) {
@@ -107,7 +107,7 @@ const Post = ({ navigation }) => {
             } catch (error) {
                 console.error("Error: ", error);
             } finally {
-                setLoading(false); // Stop loading indicator
+                setLoading(false); 
             }
         }
     };
@@ -134,7 +134,7 @@ const Post = ({ navigation }) => {
                 <>
                     <TouchableOpacity>
                         <Image
-                            resizeMode='cover' // Change resizeMode to cover for cropping
+                            resizeMode='cover' 
                             source={{ uri: image }}
                             style={styles.image}
                             accessibilityLabel="Image posted"

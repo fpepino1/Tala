@@ -43,8 +43,8 @@ export default function AppNavigator() {
         />
         <AppStack.Screen
           name="MainTabNavigator"
-          component={MainTabNavigator} // Use the bottom tabs navigator here
-          options={{ headerShown: false }} // Hide header for this screen
+          component={MainTabNavigator} 
+          options={{ headerShown: false }}
         />
       </AppStack.Navigator>
     </NavigationContainer>

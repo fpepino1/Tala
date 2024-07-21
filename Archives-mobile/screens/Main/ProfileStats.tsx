@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig'; // Ensure FIREBASE_AUTH and FIREBASE_DB are imported
+import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig';
 import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -10,16 +10,13 @@ export default function ProfileStats() {
   const [followersCount, setFollowersCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // Fetch user data
   useEffect(() => {
     if (userId) {
-      // Real-time listener for posts count
       const postsRef = collection(FIREBASE_DB, "users", userId, "posts");
       const unsubscribePosts = onSnapshot(postsRef, (snapshot) => {
         setPostsCount(snapshot.size);
       });
 
-      // Real-time listener for user document
       const userDocRef = doc(FIREBASE_DB, "users", userId);
       const unsubscribeUserDoc = onSnapshot(userDocRef, (docSnapshot) => {
         if (docSnapshot.exists()) {
@@ -29,7 +26,6 @@ export default function ProfileStats() {
         }
       });
 
-      // Cleanup subscriptions on unmount
       return () => {
         unsubscribePosts();
         unsubscribeUserDoc();
@@ -37,7 +33,6 @@ export default function ProfileStats() {
     }
   }, [userId]);
 
-  // Get user ID from Firebase Authentication
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
       if (user) {

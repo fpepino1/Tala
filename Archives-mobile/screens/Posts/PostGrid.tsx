@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Image, FlatList, StyleSheet, Dimensions, Text } from 'react-native';
+import { View, Image, FlatList, StyleSheet, Dimensions, Text, TouchableOpacity } from 'react-native';
 import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig'; 
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -19,7 +19,7 @@ const PostGrid = () => {
       try {
         const postsQuery = query(
           collection(FIREBASE_DB, "users", userId, "posts"),
-          orderBy("timestamp", "desc") // Order by timestamp field in descending order
+          orderBy("timestamp", "desc")
         );
         const querySnapshot = await getDocs(postsQuery);
         const postsData = querySnapshot.docs.map(doc => ({
@@ -54,8 +54,12 @@ const PostGrid = () => {
     }, [fetchPosts])
   );
 
+  const handlePress = (item) => {
+    console.log('Item pressed:', item);
+  };
+
   const renderItem = ({ item }) => (
-    <View style={styles.item}>
+    <TouchableOpacity style={styles.item} onPress={() => handlePress(item)}>
       {item.postImage ? (
         <Image source={{ uri: item.postImage }} style={styles.image} />
       ) : (
@@ -63,7 +67,7 @@ const PostGrid = () => {
           <Text style={styles.placeholderText}>No Image</Text>
         </View>
       )}
-    </View>
+    </TouchableOpacity>
   );
 
   return (
