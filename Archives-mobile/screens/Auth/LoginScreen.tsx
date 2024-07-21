@@ -28,12 +28,19 @@ export default function LoginScreen ({ navigation, route }: LoginScreenProps) {
       if (docSnap.exists()) {
         const userData = docSnap.data();
         console.log('User data:', userData);
+    
+  
+        navigation.navigate('MainTabNavigator', {
+          screen: 'ProfileScreen',
+          params: {
+            name: userData.name,
+            username: userData.username,
+            bio: userData.bio,
+          },
+        });
 
-        navigation.navigate('ProfileScreen', {
-          name: userData.name,
-          username: userData.username,
-          bio: userData.bio,
-        });      } else {
+
+      } else {
         console.log('No such document.');
         alert('User data not found.');
       }

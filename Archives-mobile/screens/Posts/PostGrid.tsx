@@ -1,49 +1,135 @@
-import React from 'react';
-import { View, Image, FlatList, StyleSheet, Dimensions } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Image, FlatList, StyleSheet, Dimensions, Text } from 'react-native';
+import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig'; 
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
+import { useFocusEffect } from '@react-navigation/native';
 
-// Example data array
-const data = [
-  { id: '1', image: 'https://i.pinimg.com/564x/d0/96/08/d09608783579c448e0212284e203af7a.jpg' },
-  { id: '2', image: 'https://i.pinimg.com/564x/80/7b/00/807b009c40d981fb911e97b6cc808cdc.jpg' },
-  { id: '3', image: 'https://i.pinimg.com/564x/3a/52/f9/3a52f9c9046a388f8ddc30d4c294932c.jpg' },
-  { id: '4', image: 'https://i.pinimg.com/564x/62/01/c2/6201c22ae041c82b84e850c69e5c9323.jpg' },
-  { id: '5', image: 'https://i.pinimg.com/736x/ea/27/a1/ea27a1c54fc3d20ffd58cbeadc2c302f.jpg' },
-];
-
-// Calculate item width based on screen width
 const numColumns = 3;
 const screenWidth = Dimensions.get('window').width;
 const itemWidth = screenWidth / numColumns;
 
-const renderItem = ({ item }) => (
-  <View style={styles.item}>
-    <Image source={{ uri: item.image }} style={styles.image} />
-  </View>
-);
+const PostGrid = () => {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
 
-export default function PostGrid() {
-  return (
-    <FlatList
-      data={data}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id}
-      numColumns={numColumns}
-      contentContainerStyle={styles.container}
-    />
+  const fetchPosts = useCallback(async () => {
+    if (userId) {
+      try {
+        const postsQuery = query(
+          collection(FIREBASE_DB, "users", userId, "posts"),
+          orderBy("timestamp", "desc") // Order by timestamp field in descending order
+        );
+        const querySnapshot = await getDocs(postsQuery);
+        const postsData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setPosts(postsData);
+      } catch (error) {
+        console.error("Error fetching posts: ", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        console.error("User is not authenticated.");
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchPosts();
+    }, [fetchPosts])
   );
-}
+
+  const renderItem = ({ item }) => (
+    <View style={styles.item}>
+      {item.postImage ? (
+        <Image source={{ uri: item.postImage }} style={styles.image} />
+      ) : (
+        <View style={styles.placeholder}>
+          <Text style={styles.placeholderText}>No Image</Text>
+        </View>
+      )}
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading posts...</Text>
+        </View>
+      ) : posts.length > 0 ? (
+        <FlatList
+          data={posts}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          numColumns={numColumns}
+          contentContainerStyle={styles.container}
+        />
+      ) : (
+        <View style={styles.emptyStateContainer}>
+          <Text style={styles.emptyStateText}>No posts available</Text>
+        </View>
+      )}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'column',
+    flex: 1,
   },
   item: {
     width: itemWidth,
     height: itemWidth,
-    margin: 1, // Optional: for a slight gap between images
+    margin: 1,
   },
   image: {
     width: '100%',
     height: '100%',
   },
+  placeholder: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+  },
+  placeholderText: {
+    color: '#888',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#000',
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyStateText: {
+    fontSize: 18,
+    color: '#888',
+  },
 });
+
+export default PostGrid;

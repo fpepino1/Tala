@@ -64,8 +64,7 @@ export default function ProfileScreen(){
           <Text style={[styles.bioText, styles.bioContainer]}>{userData.bio}</Text>
           <ProfileStats/>
         </View>
-        {/* <View style={styles.divider} /> */}
-        <PostGrid />
+        <PostGrid/>
        </ScrollView>
       
      

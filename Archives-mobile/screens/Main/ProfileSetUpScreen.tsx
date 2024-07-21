@@ -30,8 +30,14 @@ export default function ProfileSetUpScreen({navigation, route}: ProfileSetUpScre
 
       console.log("Bio updated successfully!");
 
-      navigation.navigate('ProfileScreen', { name: name, username: username, bio: bio });
-    } catch (error: any) {
+      navigation.navigate('MainTabNavigator', {
+        screen: 'ProfileScreen',
+        params: {
+          name: name,
+          username: username,
+          bio: bio,
+        },
+      });    } catch (error: any) {
       console.error("Error updating bio: ", error);    }
   };
 

@@ -1,14 +1,9 @@
-import React from 'react';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 
 
 
-export type BottomTabParamList = {
-  ProfileScreen: { name: string; username: string; bio: string };
-  SettingsScreen:undefined;
-};
 
 export type AppStackParamList = {
     Profile: { name: string; username: string; bio: string };
@@ -16,7 +11,16 @@ export type AppStackParamList = {
     LoginScreen: { name: string; username: string };
     RegisterScreen: undefined;
     ProfileScreen: { name: string; username: string; bio: string };
-    TabsNavigator: undefined;
+    MainTabNavigator: { screen: string; params: { name: string; username: string; bio: string; } } | undefined;
+    Feed:undefined
+  };
+
+
+
+  export type RootTabParamList = {
+    ProfileScreen: { name: string; username: string; bio: string };
+    Feed: undefined;
+    Post:undefined;
   };
 export type RegisterScreenNavigationProp = StackNavigationProp<AppStackParamList, 'RegisterScreen'>;
 export type RegisterScreenProps = {
