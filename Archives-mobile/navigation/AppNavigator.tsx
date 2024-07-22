@@ -24,6 +24,7 @@ export default function AppNavigator() {
         screenOptions={{
           headerTitle: '',
           headerBackTitleVisible: false,
+          tabBarStyle: {     backgroundColor:'#F7F3FA'      },
           headerTintColor: '#0d0d0d',
           headerTransparent: true,
         }}

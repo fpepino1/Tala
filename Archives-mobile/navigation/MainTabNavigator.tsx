@@ -13,7 +13,7 @@ export default function MainTabNavigator() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false, 
-        tabBarStyle: { backgroundColor: '#FFFFFF' },
+        tabBarStyle: {     backgroundColor:'#F7F3FA'      },
         tabBarActiveTintColor: '#D9D9D9',
         tabBarInactiveTintColor: '#0d0d0d',
       }}
@@ -33,7 +33,8 @@ export default function MainTabNavigator() {
       <Tab.Screen
         name="ProfileScreen"
         component={ProfileScreen}
-        options={{ title: 'Profile' }}
+        options={{ title: 'Profile',
+      }}
       />
 
     </Tab.Navigator>

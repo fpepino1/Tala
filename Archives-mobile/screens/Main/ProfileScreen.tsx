@@ -76,6 +76,8 @@ const styles = StyleSheet.create({
   containerCenter: {
     alignItems: 'center',
     marginTop:100,
+    backgroundColor:'#F7F3FA',
+
   },
   nameText: {
     fontSize: 24,

@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: 50,
     marginRight: 50,
+
   },
   input: {
     height: 51,

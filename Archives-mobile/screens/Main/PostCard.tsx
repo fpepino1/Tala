@@ -6,7 +6,18 @@ import { fetchUserData } from './UserData';
 import { doc, getDoc } from 'firebase/firestore';
 import { FIREBASE_DB } from '../../FirebaseConfig';
 
-const PostCard = ({ uid, postId }) => {
+interface PostData {
+  postImage: string;
+  description?: string;
+}
+
+interface PostCardProps {
+  postData: PostData;
+  uid: string;
+  postId: string;
+}
+
+const PostCard = ({postData, uid, postId }) => {
   const [user, setUser] = useState(null);
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -36,23 +47,23 @@ const PostCard = ({ uid, postId }) => {
   }, [uid, postId]);
 
   if (loading) {
-    return <ActivityIndicator />;
+    return ;
   }
 
-  if (!user || !post) {
+  else if (!user || !post) {
     return <Paragraph>No data found.</Paragraph>;
   }
 
   return (
     <Card style={styles.card}>
-      <Card.Title
-        title={user.username}
-        // subtitle={user.username}
-        left={(props) => <Avatar.Image {...props} source={{ uri: user.photoUrl }} />}
-      />
+      
       <View style={styles.imageContainer}>
         <Image source={{ uri: post.postImage }} style={styles.image} />
       </View>
+      <Card.Title
+        title={user.username}
+        left={(props) => <Avatar.Image {...props} source={{ uri: user.photoUrl }} />}
+      />
       <Card.Content>
         <Paragraph style={styles.description}>{post.description}</Paragraph>
       </Card.Content>
@@ -64,13 +75,13 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     overflow: 'hidden', 
-    marginHorizontal: 5, 
-    borderRadius:0,
+    borderRadius:12,
     shadowColor: 'transparent', 
     shadowOffset: { width: 0, height: 0 }, 
     shadowOpacity: 0, 
     shadowRadius: 0, 
- 
+    marginVertical:10,
+    
   },
   imageContainer: {
     width: '100%',
@@ -83,8 +94,8 @@ const styles = StyleSheet.create({
     resizeMode: 'cover', 
   },
   description: {
-    marginTop: 10,
-    marginRight: 10,
+    marginTop: 0,
+    marginLeft: '14%',
     marginBottom: 10,
   },
 });

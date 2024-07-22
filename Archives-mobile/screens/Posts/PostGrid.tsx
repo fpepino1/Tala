@@ -5,7 +5,7 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useFocusEffect } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
-
+import { PostGridNavigationProp } from '../../navigation/types';
 
 const numColumns = 3;
 const screenWidth = Dimensions.get('window').width;
@@ -59,7 +59,6 @@ const PostGrid = () => {
 
   const handlePress = (item) => {
     console.log('Item pressed:', item);
-    navigation.navigate('PostDetailScreen', { postId: item.id });
   };
 
   const renderItem = ({ item }) => (
@@ -78,7 +77,7 @@ const PostGrid = () => {
     <View style={styles.container}>
       {loading ? (
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading posts...</Text>
+          <Text style={styles.loadingText}></Text>
         </View>
       ) : posts.length > 0 ? (
         <FlatList

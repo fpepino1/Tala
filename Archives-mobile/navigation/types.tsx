@@ -11,20 +11,22 @@ export type AppStackParamList = {
   RegisterScreen: undefined;
   ProfileScreen: { name: string; username: string; bio: string };
   MainTabNavigator: { screen: string; params: { name: string; username: string; bio: string; } } | undefined;
-  Feed: undefined;
 };
 
+export type PostGridNavigationProp = StackNavigationProp<RootTabParamList, 'Feed'>;
 
   export interface PostData {
     postImage: string;
     description: string;
+    postId: string;
   }
   export type RootTabParamList = {
     ProfileScreen: { name: string; username: string; bio: string };
-    Feed: undefined;
-    Post:undefined;
-
+    Feed: {postId: string; userId: string;postImage: string; description: string};
+    PostDetailScreen: { postId: string; userId: string;postImage: string; description: string };
+    Post:{ postId: string; userId: string;postImage: string; description: string };
   };
+
 
 export type RegisterScreenNavigationProp = StackNavigationProp<AppStackParamList, 'RegisterScreen'>;
 export type RegisterScreenProps = {
