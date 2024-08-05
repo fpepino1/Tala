@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, ScrollView, View, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
+import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import { fetchUserData } from "./UserData";
 import { getAuth } from 'firebase/auth';
 import ProfileStats from "./ProfileStats";
 import { UserData } from "../../navigation/types";
+import MenuButton from "./MenuButton";
 import PostGrid from "../Posts/PostGrid";
+
 export default function ProfileScreen(){
   
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -51,8 +53,9 @@ export default function ProfileScreen(){
   }
 
   return (
-      <ScrollView>
-        <View style={styles.containerCenter}>
+    <ScrollView style={{ backgroundColor: '#F8F3FA'}}>
+        <View style={[styles.containerCenter, {marginTop:'15%'}]}>
+    <MenuButton/>
           <Image
             resizeMode='contain'
             source={userData.photoUrl ? { uri: userData.photoUrl } : defaultPhoto}
@@ -72,12 +75,11 @@ export default function ProfileScreen(){
 }
 
 const styles = StyleSheet.create({
- 
+
   containerCenter: {
     alignItems: 'center',
-    marginTop:100,
-    backgroundColor:'#F7F3FA',
-
+    // marginTop:'10%',
+   
   },
   nameText: {
     fontSize: 24,
@@ -112,6 +114,10 @@ const styles = StyleSheet.create({
   bioContainer:{
     marginLeft:40,
     marginRight: 50,
+  },
+  iconContainer: {
+   marginLeft: '85%',
+   marginBottom:'5%',
   },
   profile: {
     width: 130,

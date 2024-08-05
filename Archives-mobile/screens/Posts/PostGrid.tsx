@@ -58,7 +58,13 @@ const PostGrid = () => {
   );
 
   const handlePress = (item) => {
-    console.log('Item pressed:', item);
+    navigation.navigate('PostDetailScreen', {
+      postId: item.id,
+      userId: userId,
+      postImage: item.postImage,
+      description: item.description,
+      posts: posts, // Pass the posts array
+    });
   };
 
   const renderItem = ({ item }) => (
@@ -77,7 +83,7 @@ const PostGrid = () => {
     <View style={styles.container}>
       {loading ? (
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}></Text>
+          <Text style={styles.loadingText}>Loading...</Text>
         </View>
       ) : posts.length > 0 ? (
         <FlatList

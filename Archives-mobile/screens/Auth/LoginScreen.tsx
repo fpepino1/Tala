@@ -75,9 +75,9 @@ export default function LoginScreen ({ navigation, route }: LoginScreenProps) {
         <Text style={styles.submitText}>Log in</Text>
       </TouchableOpacity>
       <View style={styles.dividerContainer}>
-        <View style={styles.divider} />
+        <View style={[styles.divider, {marginLeft: 50}]} />
         <Text style={styles.orText}>or</Text>
-        <View style={styles.divider} />
+        <View style={[styles.divider, {marginRight: 50}]} />
       </View>
       <TouchableOpacity
         style={styles.submit}
@@ -93,8 +93,10 @@ export default function LoginScreen ({ navigation, route }: LoginScreenProps) {
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
-    marginLeft: 50,
-    marginRight: 50,
+   
+    flex: 1,
+    marginTop:'-50%',
+    backgroundColor: '#F8F3FA',
 
   },
   input: {
@@ -105,6 +107,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 10,
     paddingHorizontal: 20,
+    marginLeft: 50,
+    marginRight: 50,
   },
   submit: {
     backgroundColor: '#0d0d0d',
@@ -113,10 +117,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 5,
+    marginLeft: 50,
+    marginRight: 50,
   },
   forgotPasswordText: {
     marginBottom: 20,
-    marginRight: 16,
+    marginRight: 70,
     fontSize: 11,
     textAlign: 'right',
   },
@@ -134,6 +140,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 1,
     backgroundColor: '#0d0d0d',
+   
   },
   orText: {
     marginHorizontal: 10,

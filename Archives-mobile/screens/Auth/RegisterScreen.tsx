@@ -90,8 +90,12 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
-    marginLeft: 50,
-    marginRight: 50,
+    // marginLeft: 50,
+    // marginRight: 50,
+    flex: 1,
+    marginTop:'-75%',
+    backgroundColor: '#F8F3FA',
+   
   },
   input: {
     height: 51,
@@ -101,6 +105,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 10,
     paddingHorizontal: 20,
+    marginLeft: 50,
+    marginRight: 50,
   },
   submit: {
     backgroundColor: '#0d0d0d',
@@ -109,6 +115,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 15,
+    marginLeft: 50,
+    marginRight: 50,
   },
   submitText: {
     color: '#fff',

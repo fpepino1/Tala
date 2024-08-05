@@ -7,6 +7,11 @@ import ProfileSetUpScreen from '../screens/Main/ProfileSetUpScreen';
 import { AppStackParamList, CloseButtonProps } from './types';
 import { NavigationContainer } from '@react-navigation/native';
 import MainTabNavigator from './MainTabNavigator';
+import PostDetailScreen from '../screens/Main/PostDetailScreen';
+import MenuScreen from '../screens/Main/MenuScreen';
+import MenuButton from '../screens/Main/MenuButton';
+import EditProfileScreen from '../screens/Main/EditProfileScreen';
+
 const AppStack = createNativeStackNavigator<AppStackParamList>();
 
 const CloseButton: React.FC<CloseButtonProps> = ({ navigation }) => {
@@ -22,30 +27,67 @@ export default function AppNavigator() {
     <NavigationContainer>
       <AppStack.Navigator
         screenOptions={{
-          headerTitle: '',
+          headerTintColor: '#0D0D0D',
+          headerShown: false, 
           headerBackTitleVisible: false,
-          tabBarStyle: {     backgroundColor:'#F7F3FA'      },
-          headerTintColor: '#0d0d0d',
-          headerTransparent: true,
+          headerStyle:{ backgroundColor: '#F8F3FA', 
+
+        },
+       
         }}
       >
-        <AppStack.Screen name="LoginScreen" component={LoginScreen} />
-        <AppStack.Screen name="RegisterScreen" component={RegisterScreen} />
+        <AppStack.Screen name="LoginScreen" component={LoginScreen} options={    {    headerShown: false,              headerTitle: '',
+    
+
+}} />
+        <AppStack.Screen name="RegisterScreen" component={RegisterScreen} options={    {  headerTitle: '',  headerShown: true,  
+    
+
+  }}/>
         <AppStack.Screen
           name="ProfileSetUpScreen"
           component={ProfileSetUpScreen}
           options={({ navigation }) => ({
-            headerLeftShown: false,
-            headerBackVisible: false,
+           
+            headerTitle: '',
             headerRight: () => <CloseButton navigation={navigation} />,
           })}
         />
         <AppStack.Screen
           name="MainTabNavigator"
           component={MainTabNavigator} 
-          options={{ headerShown: false }}
-        />
-        
+          options={{   
+          }}
+      />
+       <AppStack.Screen
+  name="PostDetailScreen"
+  component={PostDetailScreen}
+  options={{
+    title: 'Posts',
+    headerShown: true, 
+  }}
+/>
+
+      <AppStack.Screen
+        name="MenuScreen"
+        component={MenuScreen}
+        options={{
+          title: 'Settings & Activity',
+          headerShown: true, 
+        }}
+      />
+       <AppStack.Screen
+        name="EditProfileScreen"
+        component={EditProfileScreen}
+        options={{
+          title: 'Edit Profile',
+          headerShown: true, 
+        }}
+      />
+   <AppStack.Screen
+        name="MenuButton"
+        component={MenuButton}
+      />
       </AppStack.Navigator>
     </NavigationContainer>
   );

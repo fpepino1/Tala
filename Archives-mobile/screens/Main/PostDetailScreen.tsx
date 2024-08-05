@@ -1,74 +1,80 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { ScrollView, StyleSheet, View, Text, ActivityIndicator } from 'react-native';
-import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { ScrollView, StyleSheet, View, Text, LayoutChangeEvent } from 'react-native';
+import { FIREBASE_DB } from '../../FirebaseConfig';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import PostCard from './PostCard';
+import { RouteProp } from '@react-navigation/native';
 
-export default function PostDetailScreen() {
-  const [userId, setUserId] = useState<string | null>(null);
+type PostDetailScreenRouteProp = RouteProp<any, 'PostDetailScreen'>;
+
+interface Props {
+  route: PostDetailScreenRouteProp;
+  navigation: any; 
+}
+
+export default function PostDetailScreen({ route, navigation }: Props) {
+  const { userId, postId } = route.params;
   const [posts, setPosts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [targetPostLayout, setTargetPostLayout] = useState<{ [key: string]: number }>({});
 
   useEffect(() => {
-    const fetchPosts = async (userId: string) => {
-      try {
-        const followingQuery = collection(FIREBASE_DB, "users", userId, "following");
-        const followingSnapshot = await getDocs(followingQuery);
-        const followingIds = followingSnapshot.docs.map(doc => doc.id);
+    const userPostsQuery = query(
+      collection(FIREBASE_DB, 'users', userId, 'posts'),
+      orderBy('timestamp', 'desc')
+    );
 
-        followingIds.push(userId);
-
-        const postsData: any[] = [];
-        for (const id of followingIds) {
-          const userPostsQuery = query(
-            collection(FIREBASE_DB, "users", id, "posts"),
-            orderBy("timestamp", "desc")
-          );
-          const userPostsSnapshot = await getDocs(userPostsQuery);
-          const userPosts = userPostsSnapshot.docs.map(doc => ({
-            id: doc.id,
-            userId: id,
-            ...doc.data(),
-          }));
-          postsData.push(...userPosts);
-        }
-
-        postsData.sort((a, b) => b.timestamp - a.timestamp);
-        setPosts(postsData);
-      } catch (error) {
-        console.error("Error fetching posts: ", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
-      if (user) {
-        setUserId(user.uid);
-        fetchPosts(user.uid);
-      } else {
-        console.error("User is not authenticated.");
-        setLoading(false);
-      }
+    const unsubscribe = onSnapshot(userPostsQuery, (snapshot) => {
+      const userPosts = snapshot.docs.map(doc => ({
+        id: doc.id,
+        userId: userId,
+        ...doc.data(),
+      }));
+      setPosts(userPosts);
+    }, (error) => {
+      console.error('Error fetching posts: ', error);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [userId]);
 
-  // if (loading) {
-  //   return (
-  //     <View style={styles.loadingContainer}>
-  //       <ActivityIndicator size="large" />
-  //     </View>
-  //   );
-  // }
+  const scrollToPost = useCallback(() => {
+    if (scrollViewRef.current && postId && targetPostLayout[postId] !== undefined) {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({
+          y: targetPostLayout[postId],
+          animated: false,  
+        });
+      }, 0); 
+    }
+  }, [targetPostLayout, postId]);
+
+  useEffect(() => {
+    scrollToPost();
+  }, [scrollToPost]);
+
+  const handleLayout = (postId: string) => (event: LayoutChangeEvent) => {
+    const { y } = event.nativeEvent.layout;
+    setTargetPostLayout(prevLayout => ({
+      ...prevLayout,
+      [postId]: y,
+    }));
+  };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} ref={scrollViewRef} scrollEventThrottle={0}>
       {posts.length > 0 ? (
         posts.map((post) => (
-          <PostCard key={post.id} postData={post} uid={post.userId} postId={post.id} />
+          <View
+            key={post.id}
+            onLayout={post.id === postId ? handleLayout(post.id) : undefined}
+          >
+            <PostCard
+              postData={post}
+              uid={post.userId}
+              postId={post.id}
+            />
+          </View>
         ))
       ) : (
         <View style={styles.emptyStateContainer}>
@@ -81,18 +87,15 @@ export default function PostDetailScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: '20%',
     flexGrow: 1,
-  },
-  loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#F8F3FA',
   },
   emptyStateContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#F8F3FA',
   },
   emptyStateText: {
     fontSize: 18,

@@ -162,14 +162,14 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor:'#F7F3FA',
+        backgroundColor: '#F8F3FA',
 
     },
     image: {
         width: 330,
         height: 330,
         marginBottom: 10,
-        borderRadius: 24,
+        borderRadius: 10,
     },
     inputContainer: {
         width: '80%',

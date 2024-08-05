@@ -65,7 +65,7 @@ export default function Feed() {
   // }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: '#F8F3FA' }]}>
       {posts.length > 0 ? (
         posts.map((post) => (
           <PostCard key={post.id} postData={post} uid={post.userId} postId={post.id} />
@@ -81,8 +81,8 @@ export default function Feed() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: '20%',
     flexGrow: 1,
+    backgroundColor: '#F1ECF5',
   },
   loadingContainer: {
     flex: 1,

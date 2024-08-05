@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Image, View } from 'react-native';
-import { Avatar, Card, Paragraph, ActivityIndicator } from 'react-native-paper';
+import {  StyleSheet, Image, View } from 'react-native';
+import { Surface, Avatar, Card, Paragraph, ActivityIndicator } from 'react-native-paper';
 import { fetchUserData } from './UserData';
 import { doc, getDoc } from 'firebase/firestore';
 import { FIREBASE_DB } from '../../FirebaseConfig';
@@ -17,7 +17,7 @@ interface PostCardProps {
   postId: string;
 }
 
-const PostCard = ({postData, uid, postId }) => {
+const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   const [user, setUser] = useState(null);
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,16 +47,15 @@ const PostCard = ({postData, uid, postId }) => {
   }, [uid, postId]);
 
   if (loading) {
-    return ;
-  }
-
-  else if (!user || !post) {
+    return
+    <ActivityIndicator animating={true} color="#000" />      ;
+  } else if (!user || !post) {
     return <Paragraph>No data found.</Paragraph>;
   }
 
   return (
+
     <Card style={styles.card}>
-      
       <View style={styles.imageContainer}>
         <Image source={{ uri: post.postImage }} style={styles.image} />
       </View>
@@ -68,6 +67,9 @@ const PostCard = ({postData, uid, postId }) => {
         <Paragraph style={styles.description}>{post.description}</Paragraph>
       </Card.Content>
     </Card>
+  
+
+    
   );
 };
 
@@ -75,13 +77,12 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     overflow: 'hidden', 
-    borderRadius:12,
+    borderRadius: 12,
     shadowColor: 'transparent', 
     shadowOffset: { width: 0, height: 0 }, 
     shadowOpacity: 0, 
     shadowRadius: 0, 
-    marginVertical:10,
-    
+    marginVertical: 10,
   },
   imageContainer: {
     width: '100%',
@@ -94,7 +95,6 @@ const styles = StyleSheet.create({
     resizeMode: 'cover', 
   },
   description: {
-    marginTop: 0,
     marginLeft: '14%',
     marginBottom: 10,
   },
