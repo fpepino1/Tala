@@ -17,6 +17,7 @@ export const fetchUserData = async (uid: string): Promise<UserData | null> => {
         email: userData.email,
         createdAt: userData.createdAt.toDate(), 
         bio: userData.bio,
+        userId: uid,
         photoUrl: userData.photoUrl || ''
       } as UserData;
     } else {

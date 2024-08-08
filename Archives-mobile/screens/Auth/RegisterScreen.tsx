@@ -90,8 +90,6 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
-    // marginLeft: 50,
-    // marginRight: 50,
     flex: 1,
     marginTop:'-75%',
     backgroundColor: '#F8F3FA',

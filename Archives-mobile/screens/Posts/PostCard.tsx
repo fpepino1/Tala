@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import {  StyleSheet, Image, View } from 'react-native';
 import { Surface, Avatar, Card, Paragraph, ActivityIndicator } from 'react-native-paper';
-import { fetchUserData } from './UserData';
+import { fetchUserData } from '../Main/UserData';
 import { doc, getDoc } from 'firebase/firestore';
 import { FIREBASE_DB } from '../../FirebaseConfig';
 

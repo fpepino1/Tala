@@ -5,11 +5,22 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import ProfileScreen from '../screens/Main/ProfileScreen';
 import FeedScreen from '../screens/Main/Feed';
 import Post from '../screens/Posts/Post';
-import { RootTabParamList } from './types';
+import SearchScreen from '../screens/Main/SearchScreen';
+import NotificationScreen from '../screens/Main/NotificationScreen'; 
+import { TabParamList } from './types';
+import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { StackParamList } from './types';
+const Tab = createBottomTabNavigator<TabParamList>();
 
-const Tab = createBottomTabNavigator<RootTabParamList>();
+type TabNavProp = CompositeNavigationProp<
+  StackNavigationProp<StackParamList>,
+  StackNavigationProp<TabParamList>
+>;
 
-export default function MainTabNavigator() {
+export default function TabNav() {
+  const navigation = useNavigation<TabNavProp>();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -19,24 +30,28 @@ export default function MainTabNavigator() {
           if (route.name === 'Feed') {
             iconName = 'home-outline';
           } else if (route.name === 'Post') {
-            iconName = 'add-circle-outline';
+            iconName = 'add-outline';
           } else if (route.name === 'ProfileScreen') {
             iconName = 'person-outline';
+          } else if (route.name === 'SearchScreen') {
+            iconName = 'search-outline';
+          } else if (route.name === 'NotificationScreen') {
+            iconName = 'heart-outline';  
           }
 
-          return <Ionicons name={iconName} size={25} color={color} />; 
+          return <Ionicons name={iconName} size={25} color={color} />;
         },
-        tabBarActiveTintColor: '#d9d9d9', 
-        tabBarInactiveTintColor: '#0d0d0d', 
+        tabBarActiveTintColor: '#d9d9d9',
+        tabBarInactiveTintColor: '#0d0d0d',
         headerStyle: {
           backgroundColor: '#F8F3FA',
         },
         tabBarStyle: {
           backgroundColor: '#F8F3FA',
           borderTopWidth: 0,
-          height: '8%', 
+          height: '8%',
           paddingTop: 0,
-          paddingBottom: 0
+          paddingBottom: 0,
         },
       })}
     >
@@ -48,7 +63,9 @@ export default function MainTabNavigator() {
           tabBarLabel: '',
           headerRight: () => (
             <TouchableOpacity
-              onPress={() => alert('Message button pressed')}
+              onPress={() => {
+                navigation.navigate('MessageListScreen');
+              }}
               style={{ marginRight: 10 }}
             >
               <Ionicons name="chatbubble-outline" size={25} color="#0d0d0d" />
@@ -56,10 +73,26 @@ export default function MainTabNavigator() {
           ),
         }}
       />
-        <Tab.Screen
+      <Tab.Screen
+        name="SearchScreen"
+        component={SearchScreen}
+        options={{
+          headerShown: false,
+          title: '',
+        }}
+      />
+      <Tab.Screen
         name="Post"
         component={Post}
-        options={{ title: 'New Post', tabBarLabel: '' }} 
+        options={{ title: 'New Post', tabBarLabel: '' }}
+      />
+      <Tab.Screen
+        name="NotificationScreen"
+        component={NotificationScreen}
+        options={{
+          headerShown: false,
+          title: '',
+        }}
       />
       <Tab.Screen
         name="ProfileScreen"
@@ -69,6 +102,7 @@ export default function MainTabNavigator() {
           title: '',
         }}
       />
+      
     </Tab.Navigator>
   );
 }

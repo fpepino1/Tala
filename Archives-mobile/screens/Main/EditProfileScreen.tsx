@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { View, SafeAreaView, TouchableOpacity, Text, StyleSheet, TextInput } from 'react-native';
 import Avatar from './Avatar';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { AppStackParamList } from '../../navigation/types';
+import {StackParamList } from '../../navigation/types';
 import { useNavigation } from '@react-navigation/native';
 
 export default function EditProfileScreen(){
-    const navigation = useNavigation<StackNavigationProp<AppStackParamList>>();
+    const navigation = useNavigation<StackNavigationProp<StackParamList>>();
 
   return (
     <SafeAreaView style={styles.container}>

@@ -1,5 +1,5 @@
 import React from 'react';
-import AppNavigator from './navigation/AppNavigator';
+import AppNavigator from './navigation/StackNav';
 import { StyleSheet, View} from 'react-native';
 import EditProfileScreen from './screens/Main/EditProfileScreen';
 export default function App() {

@@ -30,7 +30,7 @@ export default function LoginScreen ({ navigation, route }: LoginScreenProps) {
         console.log('User data:', userData);
     
   
-        navigation.navigate('MainTabNavigator', {
+        navigation.navigate('TabNav', {
           screen: 'ProfileScreen',
           params: {
             name: userData.name,

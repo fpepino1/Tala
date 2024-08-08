@@ -3,8 +3,7 @@ import { ScrollView, StyleSheet, View, Text, ActivityIndicator } from 'react-nat
 import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
-import PostCard from './PostCard';
-
+import PostCard from '../Posts/PostCard';
 export default function Feed() {
   const [userId, setUserId] = useState<string | null>(null);
   const [posts, setPosts] = useState<any[]>([]);
@@ -56,13 +55,6 @@ export default function Feed() {
     return () => unsubscribe();
   }, []);
 
-  // if (loading) {
-  //   return (
-  //     <View style={styles.loadingContainer}>
-  //       <ActivityIndicator size="large" />
-  //     </View>
-  //   );
-  // }
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: '#F8F3FA' }]}>

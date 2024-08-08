@@ -4,19 +4,20 @@ import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig';
 import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
-export default function ProfileStats() {
+export default function ProfileStats({userId}) {
   const [postsCount, setPostsCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [followersCount, setFollowersCount] = useState(0);
-  const [userId, setUserId] = useState<string | null>(null);
-
+  // const [userId, setUserId] = useState<string | null>(null);
   useEffect(() => {
     if (userId) {
+      // Listen for changes in posts collection
       const postsRef = collection(FIREBASE_DB, "users", userId, "posts");
       const unsubscribePosts = onSnapshot(postsRef, (snapshot) => {
         setPostsCount(snapshot.size);
       });
 
+      // Listen for changes in the user document
       const userDocRef = doc(FIREBASE_DB, "users", userId);
       const unsubscribeUserDoc = onSnapshot(userDocRef, (docSnapshot) => {
         if (docSnapshot.exists()) {
@@ -32,19 +33,7 @@ export default function ProfileStats() {
       };
     }
   }, [userId]);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
-      if (user) {
-        setUserId(user.uid);
-      } else {
-        console.error("User is not authenticated.");
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
+  
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.stat}>

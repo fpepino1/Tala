@@ -3,10 +3,10 @@ import { ScrollView, TouchableOpacity, StyleSheet, View, Text, LayoutChangeEvent
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import MenuScreen from './MenuScreen';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { AppStackParamList } from '../../navigation/types';
+import { StackParamList } from '../../navigation/types';
 import { useNavigation } from '@react-navigation/native';
 export default function MenuButton(){
-  const navigation = useNavigation<StackNavigationProp<AppStackParamList>>();
+  const navigation = useNavigation<StackNavigationProp<StackParamList>>();
 
   const handlePress = () => {
     navigation.navigate('MenuScreen'); 

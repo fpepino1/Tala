@@ -65,9 +65,9 @@ export default function ProfileScreen(){
           <Text style={[styles.nameText, styles.boldText]}>{userData.name}</Text>
           <Text style={{ ...styles.normalText, opacity: 0.6 }}>{userData.username}</Text>
           <Text style={[styles.bioText, styles.bioContainer]}>{userData.bio}</Text>
-          <ProfileStats/>
+          <ProfileStats userId={userData.userId}/>
         </View>
-        <PostGrid/>
+        <PostGrid userId={userData.userId}/>
        </ScrollView>
       
      
@@ -78,7 +78,6 @@ const styles = StyleSheet.create({
 
   containerCenter: {
     alignItems: 'center',
-    // marginTop:'10%',
    
   },
   nameText: {

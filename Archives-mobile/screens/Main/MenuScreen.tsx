@@ -1,18 +1,27 @@
 import React from 'react';
-import { SafeAreaView, TouchableOpacity, View, Text, StyleSheet, Image } from 'react-native';
+import { SafeAreaView, Linking, TouchableOpacity, View, Text, StyleSheet, Image } from 'react-native';
 import { FIREBASE_AUTH } from '../../FirebaseConfig';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { AppStackParamList } from '../../navigation/types';
+import { StackParamList } from '../../navigation/types';
 import { useNavigation } from '@react-navigation/native';
+import Icon from "react-native-vector-icons/Ionicons";
+import sendEmail  from 'react-native-email';
 
 export default function MenuScreen() {
     const auth = FIREBASE_AUTH;
-    const navigation = useNavigation<StackNavigationProp<AppStackParamList>>();
+    const navigation = useNavigation<StackNavigationProp<StackParamList>>();
 
     async function editProfile() {
         navigation.navigate('EditProfileScreen');
     }
-
+    const handleReportBug = () => {
+        const recipient = 'pepinoalyssa@gmail.com';
+        
+        sendEmail([recipient], { subject: 'Bug Report', body: 'Please describe the bug you encountered here.' })
+        .catch(error => {
+            console.error('Failed to open email client:', error);
+        });
+    };
     async function handleLogout() {
         try {
             await auth.signOut();
@@ -40,6 +49,13 @@ export default function MenuScreen() {
             <View style={styles.dividerContainer}>
                     <View style={styles.divider} />
                 </View>
+                <TouchableOpacity onPress={handleReportBug} style={styles.touchable}>
+                <Icon style={[styles.icon, {paddingHorizontal: '1%'}]}  name="alert-outline" size={30} color="#0d0d0d"/>
+                <Text style={styles.text}>Report a bug</Text>
+            </TouchableOpacity>
+            <View style={styles.dividerContainer}>
+                    <View style={styles.divider} />
+                </View>
         </SafeAreaView>
     );
 }
@@ -51,7 +67,7 @@ const styles = StyleSheet.create({
     },
     touchable: {
         flexDirection: 'row',
-        alignItems: 'center', // Vertically align items
+        alignItems: 'center', 
         paddingVertical: '5%',
     },
     icon: {

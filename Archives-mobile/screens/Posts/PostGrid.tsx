@@ -6,50 +6,49 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { useFocusEffect } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import { PostGridNavigationProp } from '../../navigation/types';
-
 const numColumns = 3;
 const screenWidth = Dimensions.get('window').width;
 const itemWidth = screenWidth / numColumns;
 
-const PostGrid = () => {
+const PostGrid = ({userId}) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
   const navigation = useNavigation<PostGridNavigationProp>();
 
   const fetchPosts = useCallback(async () => {
     if (userId) {
-      try {
-        const postsQuery = query(
-          collection(FIREBASE_DB, "users", userId, "posts"),
-          orderBy("timestamp", "desc")
-        );
-        const querySnapshot = await getDocs(postsQuery);
-        const postsData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setPosts(postsData);
-      } catch (error) {
-        console.error("Error fetching posts: ", error);
-      } finally {
+        try {
+            const postsQuery = query(
+                collection(FIREBASE_DB, "users", userId, "posts"),
+                orderBy("timestamp", "desc")
+            );
+            const querySnapshot = await getDocs(postsQuery);
+            console.log('Query Snapshot:', querySnapshot);
+            
+            if (querySnapshot.empty) {
+                console.log('No posts found for userId:', userId);
+            }
+            
+            const postsData = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+            console.log('Posts Data:', postsData);
+            setPosts(postsData);
+        } catch (error) {
+            console.error("Error fetching posts: ", error);
+        } finally {
+            setLoading(false);
+        }
+    } else {
+        console.warn('No userId provided');
         setLoading(false);
-      }
     }
-  }, [userId]);
+}, [userId]);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
-      if (user) {
-        setUserId(user.uid);
-      } else {
-        console.error("User is not authenticated.");
-        setLoading(false);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
+useEffect(() => {
+    fetchPosts();
+}, [fetchPosts]);
 
   useFocusEffect(
     useCallback(() => {
@@ -63,7 +62,7 @@ const PostGrid = () => {
       userId: userId,
       postImage: item.postImage,
       description: item.description,
-      posts: posts, // Pass the posts array
+      posts: posts, 
     });
   };
 
@@ -73,7 +72,6 @@ const PostGrid = () => {
         <Image source={{ uri: item.postImage }} style={styles.image} />
       ) : (
         <View style={styles.placeholder}>
-          <Text style={styles.placeholderText}>No Image</Text>
         </View>
       )}
     </TouchableOpacity>
@@ -83,7 +81,6 @@ const PostGrid = () => {
     <View style={styles.container}>
       {loading ? (
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading...</Text>
         </View>
       ) : posts.length > 0 ? (
         <FlatList
