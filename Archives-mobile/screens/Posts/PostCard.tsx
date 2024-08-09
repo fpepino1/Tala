@@ -48,7 +48,6 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
 
   if (loading) {
     return
-    <ActivityIndicator animating={true} color="#000" />      ;
   } else if (!user || !post) {
     return <Paragraph>No data found.</Paragraph>;
   }

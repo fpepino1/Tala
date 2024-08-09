@@ -9,6 +9,7 @@ export type StackParamList = {
   RegisterScreen: undefined;
   ProfileScreen: { name: string; username: string; bio: string };
   TabNav: { screen: string; params: { name: string; username: string; bio: string } } | undefined;
+  MessageScreen: {chatId: any[]};
   PostDetailScreen: {
     postId: string;
     userId: string;
@@ -54,6 +55,7 @@ export interface PostData {
   description: string;
   postId: string;
   posts: any[];
+  timestamp: Date; 
 }
 
 export type MenuScreenNavigationProp = StackNavigationProp<StackParamList, 'MenuScreen'>;

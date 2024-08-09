@@ -1,22 +1,26 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { ScrollView, StyleSheet, View, Text, ActivityIndicator } from 'react-native';
 import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, getDoc, query,doc, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import PostCard from '../Posts/PostCard';
 export default function Feed() {
   const [userId, setUserId] = useState<string | null>(null);
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
+  
   useEffect(() => {
     const fetchPosts = async (userId: string) => {
       try {
-        const followingQuery = collection(FIREBASE_DB, "users", userId, "following");
-        const followingSnapshot = await getDocs(followingQuery);
-        const followingIds = followingSnapshot.docs.map(doc => doc.id);
+        const userDocRef = doc(FIREBASE_DB, "users", userId);
+        const userDocSnapshot = await getDoc(userDocRef);
+    
+        const userData = userDocSnapshot.data();
+        const followingIds = userData?.following || [];
 
+      
         followingIds.push(userId);
+
 
         const postsData: any[] = [];
         for (const id of followingIds) {
@@ -33,8 +37,11 @@ export default function Feed() {
           postsData.push(...userPosts);
         }
 
-        postsData.sort((a, b) => b.timestamp - a.timestamp);
-        setPosts(postsData);
+        postsData.sort((a, b) => {
+          const aTimestamp = a.timestamp?.toMillis() || 0;
+          const bTimestamp = b.timestamp?.toMillis() || 0;
+          return bTimestamp - aTimestamp;
+        });        setPosts(postsData);
       } catch (error) {
         console.error("Error fetching posts: ", error);
       } finally {
