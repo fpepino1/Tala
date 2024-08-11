@@ -1,6 +1,8 @@
 import { collection, addDoc, setDoc, serverTimestamp, doc, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { FIREBASE_DB } from '../../FirebaseConfig';
 import { useState, useEffect } from 'react';
+import { getFirestore } from 'firebase/firestore';
+
 export const sendMessage = async (
   chatRoomId: string,
   currentUserId: string,
@@ -14,8 +16,8 @@ export const sendMessage = async (
     const messagesRef = collection(FIREBASE_DB, `chats/${chatRoomId}/messages`);
     await addDoc(messagesRef, {
       message,
-      timestamp: serverTimestamp(),
-      senderId: currentUserId, // Use senderId to distinguish between messages
+      timestamp: serverTimestamp(), 
+      senderId: currentUserId,
       receiverId: userId,
       photoUrl,
       name,
@@ -26,14 +28,6 @@ export const sendMessage = async (
   }
 };
 
-// Format Firestore timestamp to JavaScript Date object
-const formatTimestamp = (timestamp: any) => {
-  if (!timestamp) return '';
-  const date = timestamp.toDate(); // Converts Firestore Timestamp to JavaScript Date object
-  return date.toLocaleString(); // Format date as needed
-};
-
-// Custom hook to use messages from a chat room
 export const useMessages = (chatRoomId: string) => {
   const [messages, setMessages] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -43,22 +37,17 @@ export const useMessages = (chatRoomId: string) => {
 
     const messagesRef = collection(FIREBASE_DB, `chats/${chatRoomId}/messages`);
     const messagesQuery = query(messagesRef, orderBy('timestamp'));
+
     const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
       if (snapshot.empty) {
         console.log('No messages found in chat room:', chatRoomId);
         setMessages([]);
       } else {
-        const loadedMessages = snapshot.docs.map(doc => {
-          const data = doc.data();
-          console.log('Message data:', data); // Log message data
-          return {
-            id: doc.id,
-            ...data,
-            timestamp: formatTimestamp(data.timestamp),
-          };
-        });
-        
-        console.log('Loaded messages:', loadedMessages);
+        const loadedMessages = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
         setMessages(loadedMessages);
       }
     }, (err) => {
@@ -68,6 +57,10 @@ export const useMessages = (chatRoomId: string) => {
 
     return () => unsubscribe();
   }, [chatRoomId]);
+
+  if (error) {
+    console.error(error);
+  }
 
   return messages;
 };

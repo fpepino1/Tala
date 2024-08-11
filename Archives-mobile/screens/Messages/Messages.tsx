@@ -6,8 +6,6 @@ import { FIREBASE_DB } from '../../FirebaseConfig';
 import { StackParamList } from '../../navigation/types';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-type MessagesNavigationProp = StackNavigationProp<StackParamList, 'Messages'>;
-
 export default function Messages() {
   return(<Text>Hello</Text>)
 }

@@ -4,15 +4,16 @@ import { sendMessage, useMessages } from './MessageFunctions';
 import { StackParamList } from '../../navigation/types';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-type Props = {
-  navigation: StackNavigationProp<StackParamList, 'MessageScreen'>;
-  route: { params: { userId: string; chatRoomId: string; photoUrl: string; name: string; username: string; currentUserId: string } };
-}
 const MessageScreen = ({ route }) => {
   const { userId, chatRoomId, photoUrl, name, username, currentUserId } = route.params;
   const messages = useMessages(chatRoomId);
   const [message, setMessage] = useState('');
 
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return '';
+    const date = timestamp.toDate();  
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); 
+  };
   useEffect(() => {
     console.log('Chat Room ID:', chatRoomId);
     console.log('User ID:', userId);
@@ -22,12 +23,14 @@ const MessageScreen = ({ route }) => {
 
   const handleSend = () => {
     if (message.trim()) {
-      sendMessage(chatRoomId, userId, currentUserId, message, photoUrl, name, username);
+      sendMessage(chatRoomId, currentUserId, userId, message, photoUrl, name, username);  
       setMessage('');
     }
   };
 
   const reversedMessages = Array.isArray(messages) ? [...messages].reverse() : [];
+
+
 
   return (
     <View style={styles.container}>
@@ -46,13 +49,20 @@ const MessageScreen = ({ route }) => {
             renderItem={({ item }) => (
               <View style={[
                 styles.messageContainer,
-                item.senderId === userId ? styles.messageSent : styles.messageReceived
+                item.senderId === currentUserId ? styles.messageSent : styles.messageReceived
               ]}>
                 <View style={[
                   styles.messageBubble,
-                  { backgroundColor: item.senderId === userId ? '#0d0d0d' : '#d9d9d9' },
+                  { backgroundColor: item.senderId === currentUserId ? '#0d0d0d' : '#d9d9d9' },
                 ]}>
-                  <Text style={[styles.messageText, { color: item.senderId === userId ? '#fff' : '#000' }]}>{item.message}</Text>
+                  <Text style={[styles.messageText, { color: item.senderId === currentUserId ? '#fff' : '#000' }]}>{item.message}</Text>
+                  <Text style=
+                  {
+                    [
+                      styles.messageTimestamp,
+                     { color: item.senderId === currentUserId ? '#fff' : '#000' }]}>
+              {formatTimestamp(item.timestamp)}
+            </Text>
                 </View>
               </View>
             )}
@@ -84,6 +94,7 @@ const MessageScreen = ({ route }) => {
           </KeyboardAvoidingView>
         </View>
       </TouchableWithoutFeedback>
+      
     </View>
   );
 };
@@ -124,8 +135,7 @@ const styles = StyleSheet.create({
   },
   messageContainer: {
     flexDirection: 'row',
-    padding: 10,
-    marginBottom: 5,
+    paddingVertical: 2,
   },
   messageSent: {
     justifyContent: 'flex-end',
@@ -142,6 +152,11 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 16,
+  },
+  messageTimestamp: {
+    fontSize: 12,
+    marginTop: 0,
+    opacity: 0.5,
   },
   inputWrapper: {
     flexDirection: 'row',
