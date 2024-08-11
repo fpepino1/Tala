@@ -11,9 +11,11 @@ import PostDetailScreen from '../screens/Posts/PostDetailScreen';
 import MenuScreen from '../screens/Main/MenuScreen';
 import MenuButton from '../screens/Main/MenuButton';
 import EditProfileScreen from '../screens/Main/EditProfileScreen';
-import MessageListScreen from '../screens/Messages/MessageListScreen';
 import UserProfile from '../screens/Main/UserProfile';
 import SearchScreen from '../screens/Main/SearchScreen';
+import MessageScreen from '../screens/Messages/MessageScreen';
+import Messages from '../screens/Messages/Messages';
+
 const Stack = createNativeStackNavigator<StackParamList>();
 
 const CloseButton: React.FC<CloseButtonProps> = ({ navigation }) => {
@@ -79,16 +81,31 @@ export default function StackNav() {
           }}
          
         />
+        <Stack.Screen
+          name="MessageScreen"
+          component={MessageScreen}
+          options={{
+            title: '',
+            headerShown: true,
+          }}
+         
+        />
+         <Stack.Screen
+          name="Messages"
+          component={Messages}
+          options={{
+            title: 'Messages',
+            headerShown: true,
+          }}
+         
+        />
           <Stack.Screen
           name="SearchScreen"
           component={SearchScreen}
          
         />
         <Stack.Screen name="MenuButton" component={MenuButton} />
-        <Stack.Screen name="MessageListScreen" component={MessageListScreen} options={{
-            title: 'Messages',
-            headerShown: true,
-          }}/>
+        
       </Stack.Navigator>
     </NavigationContainer>
   );

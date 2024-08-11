@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Logo from '../../components/common/logo';
 import { FIREBASE_AUTH } from '../../FirebaseConfig';
 import { FIREBASE_DB } from '../../FirebaseConfig';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { LoginScreenProps } from '../../navigation/types';
 import { doc, getDoc } from 'firebase/firestore';
 
@@ -39,6 +39,7 @@ export default function LoginScreen ({ navigation, route }: LoginScreenProps) {
           },
         });
 
+        checkAuthState();
 
       } else {
         console.log('No such document.');
@@ -50,6 +51,15 @@ export default function LoginScreen ({ navigation, route }: LoginScreenProps) {
     } finally {
       setLoading(false);
     }
+  };
+  const checkAuthState = () => {
+    onAuthStateChanged(FIREBASE_AUTH, (user) => {
+      if (user) {
+        console.log("User is signed in:", user.uid);
+      } else {
+        console.log("No user is signed in.");
+      }
+    });
   };
 
   return (

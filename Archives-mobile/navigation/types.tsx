@@ -1,6 +1,20 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
+import MessageScreen from '../screens/Messages/MessageScreen';
+import Messages from '../screens/Messages/Messages';
+import { StackNavigationProp } from '@react-navigation/stack';
+export type MessageScreenNavigationProp = NativeStackNavigationProp<StackParamList, 'MessageScreen'>;
+
+// types.ts or in the same file if preferred
+export interface ChatRoom {
+  userId: string;
+  chatRoomId: string;
+  photoUrl: string;
+  name: string;
+  username: string;
+  lastMessage?: string; // Optional, if applicable
+}
+export type MessagesNavigationProp = StackNavigationProp<StackParamList, 'Messages'>;
 
 export type StackParamList = {
   Profile: { name: string; username: string; bio: string };
@@ -9,7 +23,6 @@ export type StackParamList = {
   RegisterScreen: undefined;
   ProfileScreen: { name: string; username: string; bio: string };
   TabNav: { screen: string; params: { name: string; username: string; bio: string } } | undefined;
-  MessageScreen: {chatId: any[]};
   PostDetailScreen: {
     postId: string;
     userId: string;
@@ -21,16 +34,35 @@ export type StackParamList = {
   MenuScreen: undefined;
   MenuButton: undefined;
   SearchScreen: undefined;
-  MessageListScreen: undefined;
   UserProfile: {
     username: string;
     name: string;
     photoUrl: string;
     bio: string;
     userId: string;
-    posts: Array<{ id: string; imageUrl: string }>; 
-  };};
+    posts: any[];
+    chatId?: string;
+  };
+  MessageScreen: {
+    userId: string;
+    name: string;
+    username: string;
+    photoUrl: string;
+    chatRoomId?: string;
+    currentUserId: string;
+    message?: string;
+  };
+  Messages: {userId: string;
+  chatRoomId: string;
+  photoUrl: string;
+  name: string;
+  username: string;
+  lastMessage?: string;}
 
+}
+
+ 
+  
 export type TabParamList = {
   ProfileScreen: { name: string; username: string; bio: string };
   Feed: { postId: string; userId: string; postImage: string; description: string };
@@ -48,7 +80,7 @@ export type TabParamList = {
 
 };
 
-export type PostGridNavigationProp = StackNavigationProp<TabParamList, 'Feed'>;
+export type PostGridNavigationProp = NativeStackNavigationProp<TabParamList, 'Feed'>;
 
 export interface PostData {
   postImage: string;
@@ -58,9 +90,9 @@ export interface PostData {
   timestamp: Date; 
 }
 
-export type MenuScreenNavigationProp = StackNavigationProp<StackParamList, 'MenuScreen'>;
-export type MenuButtonNavigationProp = StackNavigationProp<StackParamList, 'MenuButton'>;
-export type RegisterScreenNavigationProp = StackNavigationProp<StackParamList, 'RegisterScreen'>;
+export type MenuScreenNavigationProp = NativeStackNavigationProp<StackParamList, 'MenuScreen'>;
+export type MenuButtonNavigationProp = NativeStackNavigationProp<StackParamList, 'MenuButton'>;
+export type RegisterScreenNavigationProp = NativeStackNavigationProp<StackParamList, 'RegisterScreen'>;
 
 export type RegisterScreenProps = {
   navigation: RegisterScreenNavigationProp;
@@ -76,7 +108,7 @@ export interface UserData {
   userId: string;
 }
 
-export type LogInScreenNavigationProp = StackNavigationProp<StackParamList, 'LoginScreen'>;
+export type LogInScreenNavigationProp = NativeStackNavigationProp<StackParamList, 'LoginScreen'>;
 export type LoginScreenRouteProp = RouteProp<StackParamList, 'LoginScreen'>;
 
 export type LoginScreenProps = {
@@ -88,8 +120,9 @@ export type CloseButtonProps = {
   navigation: NativeStackNavigationProp<StackParamList>;
 };
 
-export type ProfileSetUpScreenNavigationProp = StackNavigationProp<StackParamList, 'ProfileSetUpScreen'>;
+export type ProfileSetUpScreenNavigationProp = NativeStackNavigationProp<StackParamList, 'ProfileSetUpScreen'>;
 export type ProfileSetUpScreenRouteProp = RouteProp<StackParamList, 'ProfileSetUpScreen'>;
+export type UserProfileScreenNavigationProp = NativeStackNavigationProp<StackParamList, 'UserProfile'>;
 
 export type ProfileSetUpScreenProps = {
   navigation: ProfileSetUpScreenNavigationProp;

@@ -4,14 +4,16 @@ import { Ionicons } from '@expo/vector-icons';
 import ProfileStats from './ProfileStats';
 import PostGrid from '../Posts/PostGrid';
 import { useNavigation } from '@react-navigation/native';
-import { arrayUnion, arrayRemove , doc, updateDoc, getDoc } from 'firebase/firestore';
+import { arrayUnion, arrayRemove, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig';
+import { UserProfileScreenNavigationProp } from '../../navigation/types';
+import { createChatRoom } from '../Messages/ChatRoom';
 
-export default function UserProfile({ route }) {
-  const { username, name, photoUrl, bio, userId } = route.params;
-  const navigation = useNavigation();
+export default function UserProfile({ route }: { route: { params: { username: string; name: string; photoUrl: string; bio: string; userId: string; chatId?: string; } } }) {
+  const { username, name, photoUrl, bio, userId, chatId } = route.params;
+  const navigation = useNavigation<UserProfileScreenNavigationProp>(); 
   const [isFollowing, setIsFollowing] = useState(false);
-  const [isCurrentUser, setIsCurrentUser] = useState(true); 
+  const [isCurrentUser, setIsCurrentUser] = useState(false); 
 
   useEffect(() => {
     const checkFollowingStatus = async () => {
@@ -36,50 +38,59 @@ export default function UserProfile({ route }) {
 
     checkFollowingStatus();
   }, [userId]);
+  const handleMessage = async () => {
+    try {
+      const currentUser = FIREBASE_AUTH.currentUser;
+      if (currentUser) {
+        const currentUserId = currentUser.uid;
+        const chatRoomId = chatId || await createChatRoom(currentUserId, userId);
+  
+        navigation.navigate('MessageScreen', {
+          userId,
+          currentUserId,
+          chatRoomId,
+          name,
+          username,
+          photoUrl,
+        });
+      }
+    } catch (error) {
+      console.error("Error starting chat:", error);
+    }
+  };
+  
 
   const handleFollow = async () => {
     try {
       const currentUser = FIREBASE_AUTH.currentUser;
-      if (!currentUser) return;
-    
-      const currentUserId = currentUser.uid;
-      
-      const currentUserDocRef = doc(FIREBASE_DB, 'users', currentUserId);
-      const targetUserDocRef = doc(FIREBASE_DB, 'users', userId);
-      
-      await updateDoc(currentUserDocRef, {
-        following: arrayUnion(userId)
-      });
-    
-      await updateDoc(targetUserDocRef, {
-        followers: arrayUnion(currentUserId)
-      });
+      if (currentUser) {
+        const currentUserId = currentUser.uid;
+        const currentUserDocRef = doc(FIREBASE_DB, 'users', currentUserId);
+        const targetUserDocRef = doc(FIREBASE_DB, 'users', userId);
 
-      setIsFollowing(true);
+        await updateDoc(currentUserDocRef, { following: arrayUnion(userId) });
+        await updateDoc(targetUserDocRef, { followers: arrayUnion(currentUserId) });
+
+        setIsFollowing(true);
+      }
     } catch (error) {
       console.error("Error following user:", error);
     }
   };
-  
+
   const handleUnfollow = async () => {
     try {
       const currentUser = FIREBASE_AUTH.currentUser;
-      if (!currentUser) return;
-    
-      const currentUserId = currentUser.uid;
-    
-      const currentUserDocRef = doc(FIREBASE_DB, 'users', currentUserId);
-      const targetUserDocRef = doc(FIREBASE_DB, 'users', userId);
-      
-      await updateDoc(currentUserDocRef, {
-        following: arrayRemove(userId)
-      });
-    
-      await updateDoc(targetUserDocRef, {
-        followers: arrayRemove(currentUserId)
-      });
+      if (currentUser) {
+        const currentUserId = currentUser.uid;
+        const currentUserDocRef = doc(FIREBASE_DB, 'users', currentUserId);
+        const targetUserDocRef = doc(FIREBASE_DB, 'users', userId);
 
-      setIsFollowing(false);
+        await updateDoc(currentUserDocRef, { following: arrayRemove(userId) });
+        await updateDoc(targetUserDocRef, { followers: arrayRemove(currentUserId) });
+
+        setIsFollowing(false);
+      }
     } catch (error) {
       console.error("Error unfollowing user:", error);
     }
@@ -102,14 +113,15 @@ export default function UserProfile({ route }) {
                 {isFollowing ? 'Following' : 'Follow'}
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.messageButton}>
+            <TouchableOpacity onPress={handleMessage} style={styles.messageButton}>
               <Ionicons name="chatbubble-outline" size={30} color="#0d0d0d" />
             </TouchableOpacity>
           </View>
         )}
         <ProfileStats userId={userId} />
+        </View>
+
         <PostGrid userId={userId} />
-      </View>
     </ScrollView>
   );
 }
@@ -167,10 +179,5 @@ const styles = StyleSheet.create({
   messageButton: {
     marginLeft: '5%',
     paddingBottom: '1.5%',
-  },
-  viewPostsText: {
-    fontSize: 16,
-    color: '#007BFF',
-    marginTop: 10,
   },
 });
