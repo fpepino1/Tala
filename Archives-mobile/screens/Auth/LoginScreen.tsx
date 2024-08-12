@@ -80,7 +80,9 @@ export default function LoginScreen ({ navigation, route }: LoginScreenProps) {
         onChangeText={(text) => setPassword(text)}
         secureTextEntry={true}
       />
-      <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('ForgotPasswordScreen')}>
+          <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+        </TouchableOpacity>
       <TouchableOpacity style={styles.submit} onPress={handleLogin}>
         <Text style={styles.submitText}>Log in</Text>
       </TouchableOpacity>

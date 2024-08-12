@@ -14,8 +14,8 @@ import EditProfileScreen from '../screens/Main/EditProfileScreen';
 import UserProfile from '../screens/Main/UserProfile';
 import SearchScreen from '../screens/Main/SearchScreen';
 import MessageScreen from '../screens/Messages/MessageScreen';
-import Messages from '../screens/Messages/Messages';
-
+// import Messages from '../screens/Messages/Messages';
+import ForgotPasswordScreen from '../screens/Auth/ForgotPasswordScreen';
 const Stack = createNativeStackNavigator<StackParamList>();
 
 const CloseButton: React.FC<CloseButtonProps> = ({ navigation }) => {
@@ -90,7 +90,16 @@ export default function StackNav() {
           }}
          
         />
-         <Stack.Screen
+          <Stack.Screen
+          name="ForgotPasswordScreen"
+          component={ForgotPasswordScreen}
+          options={{
+            title: '',
+            headerShown: true,
+          }}
+         
+        />
+         {/* <Stack.Screen
           name="Messages"
           component={Messages}
           options={{
@@ -98,7 +107,8 @@ export default function StackNav() {
             headerShown: true,
           }}
          
-        />
+        /> */}
+
           <Stack.Screen
           name="SearchScreen"
           component={SearchScreen}

@@ -1,20 +1,18 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import MessageScreen from '../screens/Messages/MessageScreen';
-import Messages from '../screens/Messages/Messages';
+// import Messages from '../screens/Messages/Messages';
 import { StackNavigationProp } from '@react-navigation/stack';
 export type MessageScreenNavigationProp = NativeStackNavigationProp<StackParamList, 'MessageScreen'>;
 
-// types.ts or in the same file if preferred
 export interface ChatRoom {
   userId: string;
   chatRoomId: string;
   photoUrl: string;
   name: string;
   username: string;
-  lastMessage?: string; // Optional, if applicable
+  lastMessage?: string; 
 }
-export type MessagesNavigationProp = StackNavigationProp<StackParamList, 'Messages'>;
 
 export type StackParamList = {
   Profile: { name: string; username: string; bio: string };
@@ -52,13 +50,9 @@ export type StackParamList = {
     currentUserId: string;
     message?: string;
   };
-  Messages: {userId: string;
-  chatRoomId: string;
-  photoUrl: string;
-  name: string;
-  username: string;
-  lastMessage?: string;}
-
+  ForgotPasswordScreen:{
+    email:string;
+  }
 }
 
  
