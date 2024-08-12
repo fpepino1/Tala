@@ -114,7 +114,7 @@ export default function UserProfile({ route }: { route: { params: { username: st
               </Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleMessage} style={styles.messageButton}>
-              <Ionicons style={{justifyContent: 'center', alignItems: 'center'}} name="send-sharp" size={30} color="#0d0d0d" />
+              <Ionicons style={{justifyContent: 'center', alignItems: 'center'}} name="chatbubbles-outline" size={30} color="#0d0d0d" />
             </TouchableOpacity>
           </View>
         )}

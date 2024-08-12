@@ -69,7 +69,7 @@ export default function TabNav() {
               }}
               style={{ marginRight: 10 }}
             >
-              <Ionicons name="send-sharp" size={25} color="#0d0d0d" />
+              <Ionicons name="chatbubbles-outline" size={25} color="#0d0d0d" />
             </TouchableOpacity>
           ),
         }}

@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import {  StyleSheet, Image, View, Text, TouchableOpacity, Button, TextInput, FlatList } from 'react-native';
+import {  StyleSheet, Image, View, Text, TouchableOpacity, Button, TextInput, FlatList, Modal, TouchableWithoutFeedback } from 'react-native';
 import { Surface, Avatar, Card, Paragraph, ActivityIndicator } from 'react-native-paper';
 import { fetchUserData } from '../Main/UserData';
 import { doc, getDoc, onSnapshot, setDoc, updateDoc, getFirestore,arrayUnion } from 'firebase/firestore';
 import { FIREBASE_DB } from '../../FirebaseConfig';
-
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 interface PostData {
   postImage: string;
   description?: string;
@@ -20,12 +21,15 @@ interface PostCardProps {
 }
 
 const PostCard = ({ postData, uid, postId }: PostCardProps) => {
+  const navigation = useNavigation();
   const [user, setUser] = useState(null);
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState<{ userId: string; text: string }[]>([]);
+  const [showCommentInput, setShowCommentInput] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false); // Modal state
 
 
 
@@ -58,6 +62,7 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
       const newLikes = liked ? post.likes?.filter(id => id !== uid) : [...(post.likes || []), uid];
       setLiked(!liked);
       await updateDoc(postRef, { likes: newLikes });
+      setPost(prevPost => prevPost ? { ...prevPost, likes: newLikes } : null);
     }
   };
 
@@ -70,8 +75,20 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
       await updateDoc(postRef, { comments: arrayUnion(comment) });
     }
   };
+
+  const toggleCommentInput = () => {
+    setShowCommentInput(!showCommentInput);
+  };
+
+  const openCommentModal = () => {
+    setModalVisible(true);
+  };
+
+  const closeCommentModal = () => {
+    setModalVisible(false);
+  };
   if (loading) {
-    return
+    return ;
   } else if (!user || !post) {
     return <Paragraph>No data found.</Paragraph>;
   }
@@ -79,36 +96,69 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   return (
 
     <Card style={styles.card}>
-      <View style={styles.imageContainer}>
-        <Image source={{ uri: post.postImage }} style={styles.image} />
-      </View>
-      <Card.Title
+      <TouchableOpacity>
+        <Card.Title
         title={user.username}
         left={(props) => <Avatar.Image {...props} source={{ uri: user.photoUrl }} />}
       />
-      <Card.Content>
-        <Paragraph style={styles.description}>{post.description}</Paragraph>
-        <View style={styles.interactions}>
-          <TouchableOpacity onPress={handleLike}>
-            <Text style={styles.likeButton}>{liked ? '❤️' : '🤍'} Like</Text>
+      </TouchableOpacity>
+      <View style={styles.imageContainer}>
+        <Image source={{ uri: post.postImage }} style={styles.image} />
+      </View>
+      <View style={styles.interactions}>
+        <TouchableOpacity onPress={handleLike}>
+            <Text style={styles.likeButton}>
+              {liked ? <Ionicons name="heart" size={29} color="#0D0D0D" /> : <Ionicons name="heart-outline" size={29} color="#0d0d0d" />} 
+            </Text>
           </TouchableOpacity>
+          <TouchableOpacity onPress={openCommentModal}>
+            <Ionicons style= {{paddingRight: 10}}name="chatbubble-outline" size={25} color="#0d0d0d" />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Ionicons name="send-outline" size={23} color="#0d0d0d" />
+          </TouchableOpacity>
+        </View>
+      <Card.Content>
+      <Text style={{ fontWeight: 'bold', marginTop: 10 }}>
+  {post.likes?.length > 0 ? `${post.likes.length} likes` : ''}
+</Text>
+        <View style={{flexDirection: 'row', alignItems: 'center', marginTop: post.likes?.length > 0 ? '-1%' : '-4%'}}>
+        <TouchableOpacity>
+        <Text style={{fontWeight: 'bold', marginRight: '2%'}}>{user.username}</Text>
+        </TouchableOpacity>
+        <Paragraph style={styles.description}>{post.description}</Paragraph>
+        </View>
+        <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={closeCommentModal}
+      >
+        <TouchableWithoutFeedback onPress={closeCommentModal}>
+          <View style={styles.modalOverlay} />
+        </TouchableWithoutFeedback>
+        <View style={styles.modalContent}>
+          <FlatList
+            data={comments}
+            renderItem={({ item }) => (
+              <View style={styles.comment}>
+                <Text style={styles.commentText}><Text style={styles.commentUser}>{item.userId}:</Text> {item.text}</Text>
+              </View>
+            )}
+            keyExtractor={(item, index) => index.toString()}
+          />
           <TextInput
             style={styles.commentInput}
             placeholder="Add a comment..."
             value={newComment}
             onChangeText={setNewComment}
+            onSubmitEditing={handleComment}
           />
-          <Button onPress={handleComment} title="Comment" />
+          <TouchableOpacity onPress={handleComment} style={styles.submitButton}>
+            <Text style={styles.submitButtonText}>Post</Text>
+          </TouchableOpacity>
         </View>
-        <FlatList
-          data={comments}
-          renderItem={({ item }) => (
-            <View style={styles.comment}>
-              <Text style={styles.commentText}><Text style={styles.commentUser}>{item.userId}:</Text> {item.text}</Text>
-            </View>
-          )}
-          keyExtractor={(item, index) => index.toString()}
-        />
+      </Modal>
       </Card.Content>
     </Card>
   
@@ -139,14 +189,17 @@ const styles = StyleSheet.create({
     resizeMode: 'cover', 
   },
   description: {
-    marginLeft: '14%',
-    marginBottom: 10,
+    marginVertical: 10,
   },
   interactions: {
+    marginLeft: '2%',
     marginTop: 10,
-  },
+    flexDirection: 'row',
+    alignItems: 'center',
+    },
   likeButton: {
     fontSize: 18,
+    paddingRight: 10,
   },
   commentInput: {
     borderColor: '#ddd',
@@ -154,6 +207,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     padding: 8,
     marginTop: 8,
+    
   },
   comment: {
     marginTop: 8,
@@ -162,6 +216,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   commentUser: {
+    fontWeight: 'bold',
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    height: '50%',
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+  },
+  submitButton: {
+    backgroundColor: '#007BFF',
+    borderRadius: 4,
+    padding: 10,
+    alignItems: 'center',
+  },
+  submitButtonText: {
+    color: '#fff',
     fontWeight: 'bold',
   },
 });
