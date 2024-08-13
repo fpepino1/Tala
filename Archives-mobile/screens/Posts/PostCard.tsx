@@ -1,17 +1,17 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import {  StyleSheet, Image, View, Text, TouchableOpacity, Button, TextInput, FlatList, Modal, TouchableWithoutFeedback } from 'react-native';
-import { Surface, Avatar, Card, Paragraph, ActivityIndicator } from 'react-native-paper';
+import { StyleSheet, Image, View, Text, TouchableOpacity, TextInput, FlatList, Modal, TouchableWithoutFeedback } from 'react-native';
+import { Avatar, Card, Paragraph } from 'react-native-paper';
 import { fetchUserData } from '../Main/UserData';
-import { doc, getDoc, onSnapshot, setDoc, updateDoc, getFirestore,arrayUnion } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { FIREBASE_DB } from '../../FirebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+
 interface PostData {
   postImage: string;
   description?: string;
   likes?: string[];
-  comments?: { userId: string; text: string }[];  
+  comments?: { userId: string; text: string }[];
 }
 
 interface PostCardProps {
@@ -21,7 +21,6 @@ interface PostCardProps {
 }
 
 const PostCard = ({ postData, uid, postId }: PostCardProps) => {
-  const navigation = useNavigation();
   const [user, setUser] = useState(null);
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,33 +28,26 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState<{ userId: string; text: string }[]>([]);
   const [showCommentInput, setShowCommentInput] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false); // Modal state
-
-
+  const [modalVisible, setModalVisible] = useState(false); 
 
   useEffect(() => {
-    const getUserData = async () => {
+    const fetchData = async () => {
       const userData = await fetchUserData(uid);
       setUser(userData);
-    };
 
-    const getPostData = async () => {
       const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
       const postSnap = await getDoc(postRef);
 
       if (postSnap.exists()) {
         setPost(postSnap.data());
+        setComments(postSnap.data()?.comments || []);
       }
-    };
-
-    const fetchData = async () => {
-      await getUserData();
-      await getPostData();
       setLoading(false);
     };
 
     fetchData();
   }, [uid, postId]);
+
   const handleLike = async () => {
     if (post) {
       const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
@@ -87,106 +79,154 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   const closeCommentModal = () => {
     setModalVisible(false);
   };
+
   if (loading) {
-    return ;
+    return null; 
   } else if (!user || !post) {
     return <Paragraph>No data found.</Paragraph>;
   }
 
   return (
-
     <Card style={styles.card}>
       <TouchableOpacity>
         <Card.Title
-        title={user.username}
-        left={(props) => <Avatar.Image {...props} source={{ uri: user.photoUrl }} />}
-      />
+          title={user.username}
+          left={(props) => <Avatar.Image {...props} source={{ uri: user.photoUrl }} />}
+        />
       </TouchableOpacity>
       <View style={styles.imageContainer}>
         <Image source={{ uri: post.postImage }} style={styles.image} />
       </View>
       <View style={styles.interactions}>
         <TouchableOpacity onPress={handleLike}>
-            <Text style={styles.likeButton}>
-              {liked ? <Ionicons name="heart" size={29} color="#0D0D0D" /> : <Ionicons name="heart-outline" size={29} color="#0d0d0d" />} 
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={openCommentModal}>
-            <Ionicons style= {{paddingRight: 10}}name="chatbubble-outline" size={25} color="#0d0d0d" />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Ionicons name="send-outline" size={23} color="#0d0d0d" />
-          </TouchableOpacity>
-        </View>
-      <Card.Content>
-      <Text style={{ fontWeight: 'bold', marginTop: 10 }}>
-  {post.likes?.length > 0 ? `${post.likes.length} likes` : ''}
-</Text>
-        <View style={{flexDirection: 'row', alignItems: 'center', marginTop: post.likes?.length > 0 ? '-1%' : '-4%'}}>
-        <TouchableOpacity>
-        <Text style={{fontWeight: 'bold', marginRight: '2%'}}>{user.username}</Text>
+          <Text style={styles.likeButton}>
+            {liked ? <Ionicons name="heart" size={29} color="#0D0D0D" /> : <Ionicons name="heart-outline" size={29} color="#0d0d0d" />}
+          </Text>
         </TouchableOpacity>
-        <Paragraph style={styles.description}>{post.description}</Paragraph>
+        <TouchableOpacity onPress={openCommentModal}>
+          <Ionicons style={{ paddingRight: 10 }} name="chatbubble-outline" size={25} color="#0d0d0d" />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Ionicons name="send-outline" size={23} color="#0d0d0d" />
+        </TouchableOpacity>
+      </View>
+      <Card.Content>
+        <Text style={{ fontWeight: 'bold', marginTop: 10 }}>
+          {post.likes?.length > 0 ? `${post.likes.length} likes` : ''}
+        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: post.likes?.length > 0 ? '-1%' : '-4%' }}>
+          <TouchableOpacity>
+            <Text style={{ fontWeight: 'bold', marginRight: '2%' }}>{user.username}</Text>
+          </TouchableOpacity>
+          <Paragraph style={styles.description}>{post.description}</Paragraph>
         </View>
-        <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={closeCommentModal}
-      >
-        <TouchableWithoutFeedback onPress={closeCommentModal}>
-          <View style={styles.modalOverlay} />
-        </TouchableWithoutFeedback>
-        <View style={styles.modalContent}>
-          <FlatList
-            data={comments}
-            renderItem={({ item }) => (
+        
+        {comments.length === 0 ? (
+          showCommentInput && (
+            <View style={{ flexDirection: 'row', marginHorizontal:'auto' }}>
+              <TextInput
+                style={styles.commentInput}
+                placeholder="Add a comment..."
+                value={newComment}
+                onChangeText={setNewComment}
+                onSubmitEditing={handleComment}
+              />
+               {newComment.trim().length > 0 && (
+                <TouchableOpacity onPress={handleComment} style={styles.submitButton}>
+                <Text style={styles.submitButtonText}>Post</Text>
+              </TouchableOpacity>
+              )}
+             
+            </View>
+          )
+        ) : (
+          <View>
+            {comments.length > 0 && (
               <View style={styles.comment}>
-                <Text style={styles.commentText}><Text style={styles.commentUser}>{item.userId}:</Text> {item.text}</Text>
+                <Text style={styles.commentText}>
+                  <Text style={styles.commentUser}>{comments[0].userId} </Text> {comments[0].text}
+                </Text>
               </View>
             )}
-            keyExtractor={(item, index) => index.toString()}
-          />
-          <TextInput
-            style={styles.commentInput}
-            placeholder="Add a comment..."
-            value={newComment}
-            onChangeText={setNewComment}
-            onSubmitEditing={handleComment}
-          />
-          <TouchableOpacity onPress={handleComment} style={styles.submitButton}>
-            <Text style={styles.submitButtonText}>Post</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
+            <View style={styles.commentInputContainer}>
+            <TextInput
+              style={styles.commentInput}
+              placeholder="Add a comment..."
+              value={newComment}
+              onChangeText={setNewComment}
+              onSubmitEditing={handleComment}
+            />
+           {newComment.trim().length > 0 && (
+
+            <TouchableOpacity onPress={handleComment} style={styles.submitButton}>
+              <Text style={styles.submitButtonText}>Post</Text>
+            </TouchableOpacity>)}
+            </View>
+          </View>
+        )}
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={closeCommentModal}
+        >
+          <TouchableWithoutFeedback onPress={closeCommentModal}>
+            <View style={styles.modalOverlay} />
+          </TouchableWithoutFeedback>
+          <View style={styles.modalContent}>
+          <Text style={[styles.modalTitle,{    marginBottom: '10%'}]}>Comments</Text>
+            <FlatList
+              data={comments}
+              renderItem={({ item }) => (
+                <View style={styles.comment}>
+                  <Text style={styles.commentText}>
+                    <Text style={styles.commentUser}>{item.userId}:</Text> {item.text}
+                  </Text>
+                </View>
+              )}
+              keyExtractor={(item, index) => index.toString()}
+            />
+            <View style={[styles.commentInputContainer,{ marginBottom: '10%', borderWidth: 1, borderColor: '#f0f0f0'}]}>
+            <TextInput
+              style={styles.commentInput}
+              placeholder="Add a comment..."
+              value={newComment}
+              onChangeText={setNewComment}
+              onSubmitEditing={handleComment}
+            />
+          {newComment.trim().length > 0 && (
+            <TouchableOpacity onPress={handleComment} style={styles.submitButton}>
+              <Text style={styles.submitButtonText}>Post</Text>
+            </TouchableOpacity>)}
+            </View>
+          </View>
+        </Modal>
       </Card.Content>
     </Card>
-  
-
-    
   );
 };
 
 const styles = StyleSheet.create({
   card: {
     width: '100%',
-    overflow: 'hidden', 
+    overflow: 'hidden',
     borderRadius: 12,
-    shadowColor: 'transparent', 
-    shadowOffset: { width: 0, height: 0 }, 
-    shadowOpacity: 0, 
-    shadowRadius: 0, 
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
     marginVertical: 10,
   },
   imageContainer: {
     width: '100%',
-    aspectRatio: 1, 
-    backgroundColor: '#f0f0f0', 
+    aspectRatio: 1,
+    backgroundColor: '#f0f0f0',
   },
   image: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover', 
+    resizeMode: 'cover',
   },
   description: {
     marginVertical: 10,
@@ -196,18 +236,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    },
+  },
   likeButton: {
     fontSize: 18,
     paddingRight: 10,
   },
   commentInput: {
-    borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 4,
     padding: 8,
-    marginTop: 8,
-    
+    width:'80%'
   },
   comment: {
     marginTop: 8,
@@ -218,9 +254,9 @@ const styles = StyleSheet.create({
   commentUser: {
     fontWeight: 'bold',
   },
-
   modalOverlay: {
     flex: 1,
+
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
@@ -228,20 +264,30 @@ const styles = StyleSheet.create({
     padding: 16,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
-    height: '50%',
+    height: '90%',
     position: 'absolute',
     bottom: 0,
     width: '100%',
   },
   submitButton: {
-    backgroundColor: '#007BFF',
-    borderRadius: 4,
-    padding: 10,
     alignItems: 'center',
+    width: '10%',
   },
   submitButtonText: {
-    color: '#fff',
+    color: '#0d0d0d',
+
+  },
+  commentInputContainer: {
+    flexDirection: 'row', 
+    alignContent: 'center', 
+    alignItems: 'center',
+    justifyContent: 'center', 
+  },
+  modalTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 8,
+    marginHorizontal:'auto',
   },
 });
 
