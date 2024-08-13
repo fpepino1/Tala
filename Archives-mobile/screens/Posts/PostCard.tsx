@@ -87,7 +87,8 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   }
 
   return (
-    <Card style={styles.card}>
+    <Card 
+    style={[styles.card]}>
       <TouchableOpacity>
         <Card.Title
           title={user.username}
@@ -106,9 +107,9 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
         <TouchableOpacity onPress={openCommentModal}>
           <Ionicons style={{ paddingRight: 10 }} name="chatbubble-outline" size={25} color="#0d0d0d" />
         </TouchableOpacity>
-        <TouchableOpacity>
+        {/* <TouchableOpacity>
           <Ionicons name="send-outline" size={23} color="#0d0d0d" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
       <Card.Content>
         <Text style={{ fontWeight: 'bold', marginTop: 10 }}>
@@ -120,12 +121,11 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
           </TouchableOpacity>
           <Paragraph style={styles.description}>{post.description}</Paragraph>
         </View>
-        
         {comments.length === 0 ? (
           showCommentInput && (
-            <View style={{ flexDirection: 'row', marginHorizontal:'auto' }}>
+            <View style={styles.commentInputContainer}>
               <TextInput
-                style={styles.commentInput}
+                style={[styles.commentInput]}
                 placeholder="Add a comment..."
                 value={newComment}
                 onChangeText={setNewComment}
@@ -133,7 +133,7 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
               />
                {newComment.trim().length > 0 && (
                 <TouchableOpacity onPress={handleComment} style={styles.submitButton}>
-                <Text style={styles.submitButtonText}>Post</Text>
+        <Ionicons name="arrow-forward" size={20} color="#0D0D0D" />
               </TouchableOpacity>
               )}
              
@@ -157,9 +157,8 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
               onSubmitEditing={handleComment}
             />
            {newComment.trim().length > 0 && (
-
             <TouchableOpacity onPress={handleComment} style={styles.submitButton}>
-              <Text style={styles.submitButtonText}>Post</Text>
+        <Ionicons name="arrow-forward" size={20} color="#0D0D0D" />
             </TouchableOpacity>)}
             </View>
           </View>
@@ -187,7 +186,7 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
               )}
               keyExtractor={(item, index) => index.toString()}
             />
-            <View style={[styles.commentInputContainer,{ marginBottom: '10%', borderWidth: 1, borderColor: '#f0f0f0'}]}>
+            <View style={[styles.commentInputContainer,{ marginBottom: '10%'}]}>
             <TextInput
               style={styles.commentInput}
               placeholder="Add a comment..."
@@ -197,7 +196,7 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
             />
           {newComment.trim().length > 0 && (
             <TouchableOpacity onPress={handleComment} style={styles.submitButton}>
-              <Text style={styles.submitButtonText}>Post</Text>
+        <Ionicons name="arrow-forward" size={20} color="#0D0D0D" />
             </TouchableOpacity>)}
             </View>
           </View>
@@ -210,13 +209,13 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
 const styles = StyleSheet.create({
   card: {
     width: '100%',
-    overflow: 'hidden',
-    borderRadius: 12,
-    shadowColor: 'transparent',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0,
-    shadowRadius: 0,
-    marginVertical: 10,
+    elevation: 0, 
+    shadowOpacity: 0, 
+    borderWidth: 0, 
+    borderColor: 'transparent',
+    shadowColor: 'transparent', 
+    shadowOffset: { width: 0, height: 0 }, 
+    shadowRadius: 0, 
   },
   imageContainer: {
     width: '100%',
@@ -243,8 +242,13 @@ const styles = StyleSheet.create({
   },
   commentInput: {
     padding: 8,
-    width:'80%'
-  },
+    width: '95%',
+    marginTop: '3%',
+    borderWidth: 1,
+    borderRadius: 18,
+    marginHorizontal:'auto',
+    borderColor: '#E3E3E3',
+ },
   comment: {
     marginTop: 8,
   },
@@ -256,32 +260,29 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   modalContent: {
     backgroundColor: '#fff',
     padding: 16,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
-    height: '90%',
+    height: '60%',
     position: 'absolute',
     bottom: 0,
     width: '100%',
   },
   submitButton: {
     alignItems: 'center',
-    width: '10%',
+    paddingLeft: 10,
   },
-  submitButtonText: {
-    color: '#0d0d0d',
-
-  },
+ 
   commentInputContainer: {
     flexDirection: 'row', 
     alignContent: 'center', 
     alignItems: 'center',
-    justifyContent: 'center', 
+    justifyContent: 'space-evenly', 
+    marginHorizontal:'auto', 
   },
   modalTitle: {
     fontSize: 18,
