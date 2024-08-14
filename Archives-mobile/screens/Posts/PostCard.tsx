@@ -125,7 +125,7 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
           showCommentInput && (
             <View style={styles.commentInputContainer}>
               <TextInput
-                style={[styles.commentInput]}
+                style={[styles.commentInput, {width: comments.length > 0 ? '95%' : '100%'}]}
                 placeholder="Add a comment..."
                 value={newComment}
                 onChangeText={setNewComment}
@@ -150,8 +150,8 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
             )}
             <View style={styles.commentInputContainer}>
             <TextInput
-              style={styles.commentInput}
-              placeholder="Add a comment..."
+                style={[styles.commentInput, {width: comments.length > 0 ? '95%' : '100%'}]}
+                placeholder="Add a comment..."
               value={newComment}
               onChangeText={setNewComment}
               onSubmitEditing={handleComment}
@@ -174,7 +174,7 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
             <View style={styles.modalOverlay} />
           </TouchableWithoutFeedback>
           <View style={styles.modalContent}>
-          <Text style={[styles.modalTitle,{    marginBottom: '10%'}]}>Comments</Text>
+          <Text style={[styles.modalTitle,{marginBottom: '10%'}]}>Comments</Text>
             <FlatList
               data={comments}
               renderItem={({ item }) => (
@@ -188,8 +188,8 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
             />
             <View style={[styles.commentInputContainer,{ marginBottom: '10%'}]}>
             <TextInput
-              style={styles.commentInput}
-              placeholder="Add a comment..."
+                style={[styles.commentInput, {width: comments.length > 0 ? '95%' : '100%'}]}
+                placeholder="Add a comment..."
               value={newComment}
               onChangeText={setNewComment}
               onSubmitEditing={handleComment}
@@ -209,13 +209,13 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
 const styles = StyleSheet.create({
   card: {
     width: '100%',
-    elevation: 0, 
-    shadowOpacity: 0, 
     borderWidth: 0, 
-    borderColor: 'transparent',
-    shadowColor: 'transparent', 
-    shadowOffset: { width: 0, height: 0 }, 
-    shadowRadius: 0, 
+    marginVertical:2,
+    shadowColor: 'rgba(0,0,0, 0.0)', 
+    shadowOffset: { height: 0, width: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0 
   },
   imageContainer: {
     width: '100%',
@@ -242,7 +242,6 @@ const styles = StyleSheet.create({
   },
   commentInput: {
     padding: 8,
-    width: '95%',
     marginTop: '3%',
     borderWidth: 1,
     borderRadius: 18,
@@ -260,7 +259,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
   },
   modalContent: {
     backgroundColor: '#fff',
@@ -275,13 +274,17 @@ const styles = StyleSheet.create({
   submitButton: {
     alignItems: 'center',
     paddingLeft: 10,
+    justifyContent: 'center',
+    alignContent: 'center',
+    marginBottom:'-3%'
   },
  
   commentInputContainer: {
     flexDirection: 'row', 
     alignContent: 'center', 
     alignItems: 'center',
-    justifyContent: 'space-evenly', 
+    marginTop:'2%',
+    justifyContent: 'space-between', 
     marginHorizontal:'auto', 
   },
   modalTitle: {

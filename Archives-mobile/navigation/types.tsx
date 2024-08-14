@@ -1,7 +1,7 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import MessageScreen from '../screens/Messages/MessageScreen';
-// import Messages from '../screens/Messages/Messages';
+import Messages from '../screens/Messages/Messages';
 import { StackNavigationProp } from '@react-navigation/stack';
 export type MessageScreenNavigationProp = NativeStackNavigationProp<StackParamList, 'MessageScreen'>;
 
@@ -52,6 +52,15 @@ export type StackParamList = {
   };
   ForgotPasswordScreen:{
     email:string;
+  }
+  Messages:{
+    userId: string;
+    name: string;
+    username: string;
+    photoUrl: string;
+    chatRoomId?: string;
+    currentUserId: string;
+    message?: string;
   }
 }
 

@@ -12,7 +12,7 @@ import { useNavigation, CompositeNavigationProp } from '@react-navigation/native
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParamList } from './types';
 import { FIREBASE_AUTH } from '../FirebaseConfig';
-// import Messages from '../screens/Messages/Messages';
+import Messages from '../screens/Messages/Messages';
 const Tab = createBottomTabNavigator<TabParamList>();
 
 type TabNavProp = CompositeNavigationProp<
@@ -66,6 +66,7 @@ export default function TabNav() {
           headerRight: () => (
             <TouchableOpacity
               onPress={() => {
+                navigation.navigate('Messages');
               }}
               style={{ marginRight: 10 }}
             >
