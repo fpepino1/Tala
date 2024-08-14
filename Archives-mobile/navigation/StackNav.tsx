@@ -16,6 +16,7 @@ import SearchScreen from '../screens/Main/SearchScreen';
 import MessageScreen from '../screens/Messages/MessageScreen';
 import Messages from '../screens/Messages/Messages';
 import ForgotPasswordScreen from '../screens/Auth/ForgotPasswordScreen';
+import ConnectionsList from '../screens/Main/ConnectionsList';
 const Stack = createNativeStackNavigator<StackParamList>();
 
 const CloseButton: React.FC<CloseButtonProps> = ({ navigation }) => {
@@ -48,6 +49,7 @@ export default function StackNav() {
             headerRight: () => <CloseButton navigation={navigation} />,
           })}
         />
+        <Stack.Screen name="ConnectionsList" component={ConnectionsList} />
         <Stack.Screen name="TabNav" component={TabNav} options={{}} />
         <Stack.Screen
           name="PostDetailScreen"

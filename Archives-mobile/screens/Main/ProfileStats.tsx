@@ -2,18 +2,27 @@ import React, { useEffect, useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { FIREBASE_DB } from '../../FirebaseConfig';
 import { collection, doc, onSnapshot } from 'firebase/firestore';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { StackParamList } from '../../navigation/types'; 
 
-export default function ProfileStats({ userId }) {
+type ProfileStatsScreenNavigationProp = StackNavigationProp<
+  StackParamList,
+  'ProfileStats'
+>;
+
+export default function ProfileStats({ userId }: { userId: string }) {
+  const navigation = useNavigation<ProfileStatsScreenNavigationProp>();
   const [postsCount, setPostsCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [followersCount, setFollowersCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (userId) {
-      const postsRef = collection(FIREBASE_DB, "users", userId, "posts");
-      const userDocRef = doc(FIREBASE_DB, "users", userId);
+      const postsRef = collection(FIREBASE_DB, 'users', userId, 'posts');
+      const userDocRef = doc(FIREBASE_DB, 'users', userId);
 
       const unsubscribePosts = onSnapshot(postsRef, 
         (snapshot) => {
@@ -29,7 +38,6 @@ export default function ProfileStats({ userId }) {
         (docSnapshot) => {
           if (docSnapshot.exists()) {
             const userData = docSnapshot.data();
-            console.log('User data snapshot:', userData);
             setFollowingCount(userData.following?.length || 0);
             setFollowersCount(userData.followers?.length || 0);
           }
@@ -48,7 +56,17 @@ export default function ProfileStats({ userId }) {
     }
   }, [userId]);
 
+  const handleNavigate = (type: 'followers' | 'following') => {
+    navigation.navigate('ConnectionsList', { userId, type });
+  };
 
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
+
+  if (error) {
+    return <Text style={styles.errorText}>{error}</Text>;
+  }
 
   return (
     <View style={styles.container}>
@@ -56,17 +74,17 @@ export default function ProfileStats({ userId }) {
         <Text style={styles.boldText}>{postsCount}</Text>
         <Text>posts</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.stat}>
+      <TouchableOpacity style={styles.stat} onPress={() => handleNavigate('following')}>
         <Text style={styles.boldText}>{followingCount}</Text>
         <Text>following</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.stat}>
+      <TouchableOpacity style={styles.stat} onPress={() => handleNavigate('followers')}>
         <Text style={styles.boldText}>{followersCount}</Text>
         <Text>followers</Text>
       </TouchableOpacity>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

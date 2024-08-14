@@ -14,8 +14,27 @@ export interface ChatRoom {
   lastMessage?: string; 
 }
 
+// Define navigation prop type for ConnectionsList screen
+export type ConnectionsListScreenNavigationProp = StackNavigationProp<
+StackParamList,
+  'ConnectionsList'
+>;
+
+// Define route prop type for ConnectionsList screen
+export type ConnectionsListScreenRouteProp = RouteProp<
+  StackParamList,
+  'ConnectionsList'
+>;
+
+// Combine props for ConnectionsList screen
+export type ConnectionsListProps = {
+  navigation: ConnectionsListScreenNavigationProp;
+  route: ConnectionsListScreenRouteProp;
+};
 export type StackParamList = {
+  ConnectionsList: { userId: string; type: 'followers' | 'following' };
   Profile: { name: string; username: string; bio: string };
+  ProfileStats: { userId: string };
   ProfileSetUpScreen: { name: string; username: string; bio: string };
   LoginScreen: { name: string; username: string };
   RegisterScreen: undefined;
