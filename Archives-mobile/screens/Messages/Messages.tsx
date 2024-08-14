@@ -1,42 +1,77 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useChatRooms } from './MessageFunctions';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { StackParamList } from '../../navigation/types'; // Adjust this import according to your file structure
+import { StackParamList } from '../../navigation/types';
 import { FIREBASE_AUTH } from '../../FirebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
+import { FIREBASE_DB } from '../../FirebaseConfig';
+
 interface MessagesProps {
   currentUserId: string;
 }
 
 const Messages: React.FC<MessagesProps> = () => {
+  const [userDetails, setUserDetails] = useState<{ [key: string]: any }>({});
   const currentUserId = FIREBASE_AUTH.currentUser?.uid;
   const chatRooms = useChatRooms(currentUserId);
   const navigation = useNavigation<NavigationProp<StackParamList>>();
 
-  const handleChatPress = (chatRoom: any) => {
+  const handleChatPress = async (chatRoom: any) => {
+    if (!currentUserId) {
+      console.error('Current user ID is not available.');
+      return;
+    }
+
     const otherUserId = chatRoom.users.find((id: string) => id !== currentUserId);
-    navigation.navigate('MessageScreen', {
-      chatRoomId: chatRoom.id,
-      userId: otherUserId,
-      currentUserId,
-      photoUrl: chatRoom.photoUrl,
-      name: chatRoom.name,
-      username: chatRoom.username,
-    });
+    if (!otherUserId) {
+      console.error('Other user ID not found.');
+      return;
+    }
+
+    const otherUserDocRef = doc(FIREBASE_DB, `users/${otherUserId}`);
+    try {
+      const otherUserDocSnapshot = await getDoc(otherUserDocRef);
+
+      if (otherUserDocSnapshot.exists()) {
+        const otherUserData = otherUserDocSnapshot.data();
+        setUserDetails((prevDetails) => ({
+          ...prevDetails,
+          [otherUserId]: otherUserData,
+        }));
+        
+        navigation.navigate('MessageScreen', {
+          chatRoomId: chatRoom.id,
+          userId: otherUserId,
+          currentUserId,
+          photoUrl: otherUserData.photoUrl,
+          name: otherUserData.name,
+          username: otherUserData.username,
+        });
+      } else {
+        console.log('No such document!');
+      }
+    } catch (error) {
+      console.error('Error fetching document:', error);
+    }
   };
 
-  const renderItem = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      style={styles.chatRoomContainer}
-      onPress={() => handleChatPress(item)}
-    >
-      <Image source={{ uri: item.photoUrl }} style={styles.profileImage} />
-      <View style={styles.chatRoomText}>
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.username}>{item.username}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const renderItem = ({ item }: { item: any }) => {
+    const otherUser = userDetails[item.users.find((id: string) => id !== currentUserId)];
+    
+    return (
+      <TouchableOpacity
+        style={styles.chatRoomContainer}
+        onPress={() => handleChatPress(item)}
+      >
+        <Image source={{ uri: otherUser?.photoUrl }} style={styles.profileImage} />
+        <View style={styles.chatRoomText}>
+          <Text style={styles.name}>{otherUser?.name}</Text>
+          <Text style={styles.username}>{otherUser?.username || 'Username not available'}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>

@@ -37,9 +37,24 @@ export const useChatRooms = (currentUserId: string) => {
         const chatRoomsData = await Promise.all(chatRoomIds.map(async (chatRoomId) => {
           const chatRoomDocRef = doc(FIREBASE_DB, `chats/${chatRoomId}`);
           const chatRoomDoc = await getDoc(chatRoomDocRef);
-          if (chatRoomDoc.exists()) {
-            return { id: chatRoomId, ...chatRoomDoc.data() };
+          if  (chatRoomDoc.exists()) {
+            const chatRoomData = chatRoomDoc.data();
+            const otherUserId = chatRoomData.users.find((id: string) => id !== currentUserId);
+            
+            if (otherUserId) {
+              const otherUserDocRef = doc(FIREBASE_DB, `users/${otherUserId}`);
+              const otherUserDoc = await getDoc(otherUserDocRef);
+              
+              let otherUserData = {};
+              if (otherUserDoc.exists()) {
+                otherUserData = otherUserDoc.data();
+              }
+              console.log('Other User Data:', otherUserData);
+
+              return { id: chatRoomId, ...chatRoomData, otherUser: otherUserData };
+            }
           }
+
           return null;
         }));
 
