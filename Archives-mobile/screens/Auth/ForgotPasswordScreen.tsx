@@ -17,7 +17,7 @@ export default function ForgotPasswordScreen({ navigation }) {
     try {
       await sendPasswordResetEmail(auth, email);
       Alert.alert('Success', 'Password reset email sent!');
-      navigation.goBack(); // Navigate back to the LoginScreen after success
+      navigation.goBack(); 
     } catch (error) {
       Alert.alert('Error', error.message);
     }

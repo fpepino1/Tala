@@ -49,7 +49,12 @@ export default function StackNav() {
             headerRight: () => <CloseButton navigation={navigation} />,
           })}
         />
-        <Stack.Screen name="ConnectionsList" component={ConnectionsList} />
+        <Stack.Screen name="ConnectionsList" component={ConnectionsList}
+        options={({ route }) => ({
+          title: route.params.type === 'followers' ? 'Followers' : 'Following',
+          headerShown: true,
+        })}
+      />
         <Stack.Screen name="TabNav" component={TabNav} options={{}} />
         <Stack.Screen
           name="PostDetailScreen"

@@ -38,8 +38,7 @@ export default function ProfileScreen(){
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0D0D0D" />
+      <SafeAreaView style={styles.loadingContainer}>  
       </SafeAreaView>
     );
   }
@@ -105,6 +104,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#F8F3FA',
   },
   container: {
     justifyContent: 'center',

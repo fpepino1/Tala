@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { FIREBASE_DB } from '../../FirebaseConfig';
-import { collection, doc, onSnapshot } from 'firebase/firestore';
+import { collection, doc, onSnapshot, getDoc } from 'firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { StackParamList } from '../../navigation/types'; 
+import { StackParamList } from '../../navigation/types';
 
 type ProfileStatsScreenNavigationProp = StackNavigationProp<
   StackParamList,
@@ -35,11 +35,27 @@ export default function ProfileStats({ userId }: { userId: string }) {
       );
 
       const unsubscribeUserDoc = onSnapshot(userDocRef, 
-        (docSnapshot) => {
+        async (docSnapshot) => {
           if (docSnapshot.exists()) {
             const userData = docSnapshot.data();
-            setFollowingCount(userData.following?.length || 0);
-            setFollowersCount(userData.followers?.length || 0);
+
+            const filterNonExistentUsers = async (list: string[]) => {
+              const filteredList = [];
+              for (const id of list) {
+                const userRef = doc(FIREBASE_DB, 'users', id);
+                const userSnapshot = await getDoc(userRef);
+                if (userSnapshot.exists()) {
+                  filteredList.push(id);
+                }
+              }
+              return filteredList;
+            };
+
+            const filteredFollowing = await filterNonExistentUsers(userData.following || []);
+            const filteredFollowers = await filterNonExistentUsers(userData.followers || []);
+
+            setFollowingCount(filteredFollowing.length);
+            setFollowersCount(filteredFollowers.length);
           }
           setLoading(false);
         },
@@ -60,9 +76,7 @@ export default function ProfileStats({ userId }: { userId: string }) {
     navigation.navigate('ConnectionsList', { userId, type });
   };
 
-  if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
-  }
+ 
 
   if (error) {
     return <Text style={styles.errorText}>{error}</Text>;

@@ -21,13 +21,13 @@
     "aws-sdk": "^2.1645.0",
     "expo": "^51.0.26",
     "expo-app-loading": "^2.1.1",
-    "expo-font": "~12.0.7",
-    "expo-image-picker": "^15.0.5",
+    "expo-font": "~12.0.9",
+    "expo-image-picker": "~15.0.7",
     "expo-status-bar": "~1.12.1",
     "firebase": "^10.12.2",
     "firebase-admin": "^12.1.1",
-    "react": "18.2.0",
-    "react-native": "^0.74.2",
+    "react": "^18.2.0",
+    "react-native": "0.74.5",
     "react-native-email": "^2.1.0",
     "react-native-flexible-grid": "^0.1.9",
     "react-native-gesture-handler": "~2.16.1",
@@ -37,12 +37,12 @@
     "react-native-vector-icons": "^10.1.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0",
+    "@babel/core": "^7.24.0",
     "@types/aws-sdk": "^2.7.0",
-    "@types/react": "~18.2.45",
+    "@types/react": "~18.2.79",
     "@types/react-native": "^0.73.0",
     "@types/react-native-vector-icons": "^6.4.18",
-    "typescript": "^5.5.4"
+    "typescript": "~5.3.3"
   },
   "private": true,
   "keywords": [],

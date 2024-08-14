@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useChatRooms } from './MessageFunctions';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -17,57 +17,59 @@ const Messages: React.FC<MessagesProps> = () => {
   const chatRooms = useChatRooms(currentUserId);
   const navigation = useNavigation<NavigationProp<StackParamList>>();
 
-  const handleChatPress = async (chatRoom: any) => {
-    if (!currentUserId) {
-      console.error('Current user ID is not available.');
-      return;
-    }
-
-    const otherUserId = chatRoom.users.find((id: string) => id !== currentUserId);
-    if (!otherUserId) {
-      console.error('Other user ID not found.');
-      return;
-    }
-
-    const otherUserDocRef = doc(FIREBASE_DB, `users/${otherUserId}`);
-    try {
-      const otherUserDocSnapshot = await getDoc(otherUserDocRef);
-
-      if (otherUserDocSnapshot.exists()) {
-        const otherUserData = otherUserDocSnapshot.data();
-        setUserDetails((prevDetails) => ({
-          ...prevDetails,
-          [otherUserId]: otherUserData,
-        }));
-        
-        navigation.navigate('MessageScreen', {
-          chatRoomId: chatRoom.id,
-          userId: otherUserId,
-          currentUserId,
-          photoUrl: otherUserData.photoUrl,
-          name: otherUserData.name,
-          username: otherUserData.username,
-        });
-      } else {
-        console.log('No such document!');
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      const details: { [key: string]: any } = {};
+      for (const chatRoom of chatRooms) {
+        const otherUserId = chatRoom.users.find((id: string) => id !== currentUserId);
+        if (otherUserId) {
+          const otherUserDocRef = doc(FIREBASE_DB, `users/${otherUserId}`);
+          const otherUserDocSnapshot = await getDoc(otherUserDocRef);
+          if (otherUserDocSnapshot.exists()) {
+            details[otherUserId] = otherUserDocSnapshot.data();
+          }
+        }
       }
-    } catch (error) {
-      console.error('Error fetching document:', error);
+      setUserDetails(details);
+    };
+
+    fetchUserDetails();
+  }, [chatRooms, currentUserId]);
+
+  const handleChatPress = (chatRoom: any) => {
+    const otherUserId = chatRoom.users.find((id: string) => id !== currentUserId);
+    if (otherUserId && userDetails[otherUserId]) {
+      const otherUserData = userDetails[otherUserId];
+      navigation.navigate('MessageScreen', {
+        chatRoomId: chatRoom.id,
+        userId: otherUserId,
+        currentUserId,
+        photoUrl: otherUserData.photoUrl,
+        name: otherUserData.name,
+        username: otherUserData.username,
+      });
+    } else {
+      console.error('User details not available.');
     }
   };
 
   const renderItem = ({ item }: { item: any }) => {
-    const otherUser = userDetails[item.users.find((id: string) => id !== currentUserId)];
-    
+    const otherUserId = item.users.find((id: string) => id !== currentUserId);
+    const otherUser = userDetails[otherUserId];
+
+    if (!otherUser) {
+      return null;
+    }
+
     return (
       <TouchableOpacity
         style={styles.chatRoomContainer}
         onPress={() => handleChatPress(item)}
       >
-        <Image source={{ uri: otherUser?.photoUrl }} style={styles.profileImage} />
+        <Image source={{ uri: otherUser.photoUrl }} style={styles.profileImage} />
         <View style={styles.chatRoomText}>
-          <Text style={styles.name}>{otherUser?.name}</Text>
-          <Text style={styles.username}>{otherUser?.username || 'Username not available'}</Text>
+          <Text style={styles.name}>{otherUser.name}</Text>
+          <Text style={styles.username}>{otherUser.username}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -92,13 +94,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8F3FA',
-    padding: 10,
   },
   chatRoomContainer: {
     flexDirection: 'row',
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    padding: 15,
+    marginTop: '-3%',
     alignItems: 'center',
   },
   profileImage: {
