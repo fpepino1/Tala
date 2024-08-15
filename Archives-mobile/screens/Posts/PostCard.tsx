@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Image, View, Text, TouchableOpacity, TextInput, FlatList, Modal, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, Image, View, Text, TouchableOpacity, TextInput, FlatList, Modal, TouchableWithoutFeedback, Alert } from 'react-native';
 import { Avatar, Card, Paragraph } from 'react-native-paper';
 import { fetchUserData } from '../Main/UserData';
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, getDocs, collection } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, getDocs, collection, deleteDoc, query } from 'firebase/firestore';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../../FirebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -113,7 +113,80 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   const closeCommentModal = () => {
     setModalVisible(false);
   };
-
+  const handleDeleteComment = (commentId: string) => {
+    Alert.alert(
+      'Delete Comment',
+      'Are you sure you want to delete this comment?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
+              const commentsRef = collection(postRef, 'comments');
+  
+              const commentDocRef = doc(commentsRef, commentId);
+  
+              await deleteDoc(commentDocRef);
+  
+              setComments(prevComments => prevComments.filter(comment => comment.userId !== commentId));
+  
+              console.log('Comment deleted');
+            } catch (error) {
+              console.error('Error deleting comment:', error);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+  
+  const handleDeletePost = async () => {
+    try {
+      const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
+      const commentsRef = collection(postRef, 'comments');
+      const likesRef = collection(postRef, 'likes');
+  
+      Alert.alert(
+        'Delete Post',
+        'Are you sure you want to delete this post? This will also delete all associated comments and likes.',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              const commentsSnapshot = await getDocs(query(commentsRef));
+              commentsSnapshot.forEach(async (commentDoc) => {
+                await deleteDoc(commentDoc.ref);
+              });
+  
+              const likesSnapshot = await getDocs(query(likesRef));
+              likesSnapshot.forEach(async (likeDoc) => {
+                await deleteDoc(likeDoc.ref);
+              });
+  
+              // Finally, delete the post itself
+              await deleteDoc(postRef);
+              console.log('Post and associated data deleted');
+            },
+          },
+        ],
+        { cancelable: true }
+      );
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    }
+  };
   const goToUserProfile = async () => {
     if (user) {
       try {
@@ -148,10 +221,18 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
     style={[styles.card]}>
          <TouchableOpacity onPress={goToUserProfile}>
 
-        <Card.Title
-          title={user.username}
-          left={(props) => <Avatar.Image {...props} source={{ uri: user.photoUrl }} />}
-        />
+         <Card.Title
+  title={user.username}
+  left={(props) => <Avatar.Image {...props} source={{ uri: user.photoUrl }} />}
+  right={(props) =>
+    FIREBASE_AUTH.currentUser?.uid === uid && (
+      <TouchableOpacity onPress={handleDeletePost} >
+        <Ionicons name="trash-outline" size={25} color="#d9534f" />
+      </TouchableOpacity>
+    )
+  }
+/>
+
       </TouchableOpacity>
       <View style={styles.imageContainer}>
         <Image source={{ uri: post.postImage }} style={styles.image} />
@@ -170,9 +251,11 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
         </TouchableOpacity> */}
       </View>
       <Card.Content>
+        <TouchableOpacity>
         <Text style={{ fontWeight: 'bold', marginTop: 10 }}>
           {post.likes?.length > 0 ? `${post.likes.length} likes` : ''}
         </Text>
+        </TouchableOpacity>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: post.likes?.length > 0 ? '-1%' : '-4%' }}>
           <TouchableOpacity>
             <Text style={{ fontWeight: 'bold', marginRight: '2%' }}>{user.username}</Text>
@@ -235,19 +318,25 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
           <View style={styles.modalContent}>
           <Text style={[styles.modalTitle,{marginBottom: '10%'}]}>Comments</Text>
           <FlatList
-                    data={comments}
-                    renderItem={({ item }) => (
-                      <View style={styles.comment}>
-                        <Text style={styles.commentText}>
-                          <Text style={styles.commentUser}>
-                            {commentUsernames[item.userId] || 'Unknown User'}
-                          </Text> 
-                          {item.text}
-                        </Text>
-                      </View>
-                    )}
-                    keyExtractor={(item, index) => index.toString()}
-                  />
+  data={comments}
+  renderItem={({ item }) => (
+    <View style={styles.comment}>
+      <Text style={styles.commentText}>
+        <Text style={styles.commentUser}>
+          {commentUsernames[item.userId] || 'Unknown User'}
+        </Text> 
+        {item.text}
+      </Text>
+      {/* Add delete button for each comment */}
+      {FIREBASE_AUTH.currentUser?.uid === item.userId && (
+        <TouchableOpacity onPress={() => handleDeleteComment(item.userId)}>
+          <Ionicons name="trash-outline" size={20} color="#d9534f" />
+        </TouchableOpacity>
+      )}
+    </View>
+  )}
+  keyExtractor={(item, index) => index.toString()}
+/>
             <View style={[styles.commentInputContainer,{ marginBottom: '10%'}]}>
             <TextInput
                 style={[styles.commentInput, {width: comments.length > 0 ? '95%' : '100%'}]}
