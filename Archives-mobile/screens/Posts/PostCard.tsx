@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Image, View, Text, TouchableOpacity, TextInput, FlatList, Modal, TouchableWithoutFeedback, Alert } from 'react-native';
 import { Avatar, Card, Paragraph } from 'react-native-paper';
 import { fetchUserData } from '../Main/UserData';
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, getDocs, collection, deleteDoc, query } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, getDocs, collection, deleteDoc, query, addDoc } from 'firebase/firestore';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../../FirebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -34,7 +34,7 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   const [commentUsernames, setCommentUsernames] = useState<{ [userId: string]: string }>({});
 
   const navigation = useNavigation<UserProfileScreenNavigationProp>();
-
+  
   useEffect(() => {
     const fetchData = async () => {
       const userData = await fetchUserData(uid);
@@ -77,6 +77,18 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
       fetchCommentUsernames();
     }
   }, [comments, loading]);
+
+  const createNotification = async (type: 'like' | 'comment', postOwnerId: string, fromUserId: string, postId: string) => {
+    const notificationRef = collection(FIREBASE_DB, 'notifications');
+    await addDoc(notificationRef, {
+      userId: postOwnerId,
+      type: type,
+      postId: postId,
+      fromUserId: fromUserId,
+      timestamp: new Date().toISOString(),
+    });
+  };
+  
   const handleLike = async () => {
     if (post) {
       const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
@@ -89,18 +101,26 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
       setLiked(!userHasLiked);
       await updateDoc(postRef, { likes: newLikes });
       setPost(prevPost => prevPost ? { ...prevPost, likes: newLikes } : null);
+
+      if (!userHasLiked) {
+        await createNotification('like', uid, FIREBASE_AUTH.currentUser?.uid || '', postId);
+      }
     }
   };
 
   const handleComment = async () => {
     if (newComment.trim() && post) {
       const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
-      const comment = { userId: FIREBASE_AUTH.currentUser?.uid || '', text: newComment.trim() };
+      const commentId = new Date().getTime().toString(); // or use a UUID library
+      const comment = { id: commentId, userId: FIREBASE_AUTH.currentUser?.uid || '', text: newComment.trim() };
       setComments([...comments, comment]);
       setNewComment('');
       await updateDoc(postRef, { comments: arrayUnion(comment) });
+      await createNotification('comment', uid, FIREBASE_AUTH.currentUser?.uid || '', postId);
+
     }
   };
+  
   
   const toggleCommentInput = () => {
     setShowCommentInput(!showCommentInput);
@@ -113,39 +133,34 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   const closeCommentModal = () => {
     setModalVisible(false);
   };
-  const handleDeleteComment = (commentId: string) => {
-    Alert.alert(
-      'Delete Comment',
-      'Are you sure you want to delete this comment?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      Alert.alert(
+        'Delete Comment',
+        'Are you sure you want to delete this comment?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
               const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
-              const commentsRef = collection(postRef, 'comments');
-  
-              const commentDocRef = doc(commentsRef, commentId);
+              const commentDocRef = doc(postRef, 'comments', commentId);
   
               await deleteDoc(commentDocRef);
   
               setComments(prevComments => prevComments.filter(comment => comment.userId !== commentId));
-  
               console.log('Comment deleted');
-            } catch (error) {
-              console.error('Error deleting comment:', error);
-            }
+            },
           },
-        },
-      ],
-      { cancelable: true }
-    );
+        ],
+        { cancelable: true }
+      );
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
   };
+  
   
   const handleDeletePost = async () => {
     try {
@@ -226,8 +241,9 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   left={(props) => <Avatar.Image {...props} source={{ uri: user.photoUrl }} />}
   right={(props) =>
     FIREBASE_AUTH.currentUser?.uid === uid && (
-      <TouchableOpacity onPress={handleDeletePost} >
-        <Ionicons name="trash-outline" size={25} color="#d9534f" />
+      <TouchableOpacity onPress={handleDeletePost} 
+      style={{paddingRight: '3%'}}>
+        <Ionicons name="ellipsis-horizontal" size={20} color="#0d0d0d" />
       </TouchableOpacity>
     )
   }
@@ -281,7 +297,7 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
         ) : (
           <View>
           {comments.length > 0 && (
-          <View style={styles.comment}>
+          <View>
             <Text style={styles.commentText}>
               <Text style={styles.commentUser}>
                 {commentUsernames[comments[comments.length - 1].userId]}
@@ -320,14 +336,13 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
           <FlatList
   data={comments}
   renderItem={({ item }) => (
-    <View style={styles.comment}>
-      <Text style={styles.commentText}>
-        <Text style={styles.commentUser}>
+    <View style={{flexDirection: 'row', justifyContent: 'space-between', padding:'2%'}}>
+      <Text style={{fontSize:14}}>  
+        <Text style={{ fontWeight: 'bold' }}>
           {commentUsernames[item.userId] || 'Unknown User'}
         </Text> 
         {item.text}
-      </Text>
-      {/* Add delete button for each comment */}
+      </Text>      
       {FIREBASE_AUTH.currentUser?.uid === item.userId && (
         <TouchableOpacity onPress={() => handleDeleteComment(item.userId)}>
           <Ionicons name="trash-outline" size={20} color="#d9534f" />
@@ -393,21 +408,18 @@ const styles = StyleSheet.create({
   },
   commentInput: {
     padding: 8,
-    marginTop: '3%',
+    marginTop: '1%',
     borderWidth: 1,
     borderRadius: 18,
     marginHorizontal:'auto',
     borderColor: '#E3E3E3',
  },
-  comment: {
-    marginTop: 8,
-  },
+  
   commentText: {
-    fontSize: 16,
+    fontSize: 14,
   },
   commentUser: {
     fontWeight: 'bold',
-    paddingRight: 10,
   },
   modalOverlay: {
     flex: 1,
