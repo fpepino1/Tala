@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Image, View, Text, TouchableOpacity, TextInput, FlatList, Modal, TouchableWithoutFeedback } from 'react-native';
 import { Avatar, Card, Paragraph } from 'react-native-paper';
 import { fetchUserData } from '../Main/UserData';
-import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { FIREBASE_DB } from '../../FirebaseConfig';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, getDocs, collection } from 'firebase/firestore';
+import { FIREBASE_AUTH, FIREBASE_DB } from '../../FirebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { UserProfileScreenNavigationProp } from '../../navigation/types';
 
 interface PostData {
   postImage: string;
@@ -21,14 +23,17 @@ interface PostCardProps {
 }
 
 const PostCard = ({ postData, uid, postId }: PostCardProps) => {
-  const [user, setUser] = useState(null);
-  const [post, setPost] = useState(null);
+  const [user, setUser] = useState<any>(null);
+  const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState<{ userId: string; text: string }[]>([]);
   const [showCommentInput, setShowCommentInput] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false); 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [commentUsernames, setCommentUsernames] = useState<{ [userId: string]: string }>({});
+
+  const navigation = useNavigation<UserProfileScreenNavigationProp>();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,17 +47,46 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
         setPost(postSnap.data());
         setComments(postSnap.data()?.comments || []);
       }
+
+    
       setLoading(false);
     };
 
     fetchData();
+    
+
   }, [uid, postId]);
 
+  useEffect(() => {
+    const fetchCommentUsernames = async () => {
+      const usernames: { [userId: string]: string } = {};
+      const uniqueUserIds = Array.from(new Set(comments.map(comment => comment.userId)));
+
+      for (const userId of uniqueUserIds) {
+        const userRef = doc(FIREBASE_DB, 'users', userId);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          usernames[userId] = userSnap.data()?.username || '';
+        }
+      }
+
+      setCommentUsernames(usernames);
+    };
+
+    if (!loading) {
+      fetchCommentUsernames();
+    }
+  }, [comments, loading]);
   const handleLike = async () => {
     if (post) {
       const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
-      const newLikes = liked ? post.likes?.filter(id => id !== uid) : [...(post.likes || []), uid];
-      setLiked(!liked);
+      const userHasLiked = post.likes?.includes(uid) || false;
+
+      const newLikes = userHasLiked
+        ? post.likes?.filter(id => id !== uid)
+        : [...(post.likes || []), uid];
+
+      setLiked(!userHasLiked);
       await updateDoc(postRef, { likes: newLikes });
       setPost(prevPost => prevPost ? { ...prevPost, likes: newLikes } : null);
     }
@@ -61,13 +95,13 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   const handleComment = async () => {
     if (newComment.trim() && post) {
       const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
-      const comment = { userId: uid, text: newComment.trim() };
+      const comment = { userId: FIREBASE_AUTH.currentUser?.uid || '', text: newComment.trim() };
       setComments([...comments, comment]);
       setNewComment('');
       await updateDoc(postRef, { comments: arrayUnion(comment) });
     }
   };
-
+  
   const toggleCommentInput = () => {
     setShowCommentInput(!showCommentInput);
   };
@@ -80,16 +114,40 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
     setModalVisible(false);
   };
 
+  const goToUserProfile = async () => {
+    if (user) {
+      try {
+        // Fetch the user's posts
+        const postsRef = collection(FIREBASE_DB, 'users', uid, 'posts');
+        const postsSnapshot = await getDocs(postsRef);
+  
+        const userPosts: any[] = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  
+        navigation.navigate('UserProfile', {
+          username: user.username,
+          name: user.name,
+          photoUrl: user.photoUrl,
+          bio: user.bio,
+          userId: uid,
+          posts: userPosts, 
+        });
+      } catch (error) {
+        console.error('Error fetching user posts:', error);
+      }
+    }
+  };
+  
+
   if (loading) {
-    return null; 
+    return null;
   } else if (!user || !post) {
     return <Paragraph>No data found.</Paragraph>;
   }
-
   return (
     <Card 
     style={[styles.card]}>
-      <TouchableOpacity>
+         <TouchableOpacity onPress={goToUserProfile}>
+
         <Card.Title
           title={user.username}
           left={(props) => <Avatar.Image {...props} source={{ uri: user.photoUrl }} />}
@@ -121,34 +179,9 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
           </TouchableOpacity>
           <Paragraph style={styles.description}>{post.description}</Paragraph>
         </View>
+       
         {comments.length === 0 ? (
-          showCommentInput && (
-            <View style={styles.commentInputContainer}>
-              <TextInput
-                style={[styles.commentInput, {width: comments.length > 0 ? '95%' : '100%'}]}
-                placeholder="Add a comment..."
-                value={newComment}
-                onChangeText={setNewComment}
-                onSubmitEditing={handleComment}
-              />
-               {newComment.trim().length > 0 && (
-                <TouchableOpacity onPress={handleComment} style={styles.submitButton}>
-        <Ionicons name="arrow-forward" size={20} color="#0D0D0D" />
-              </TouchableOpacity>
-              )}
-             
-            </View>
-          )
-        ) : (
-          <View>
-            {comments.length > 0 && (
-              <View style={styles.comment}>
-                <Text style={styles.commentText}>
-                  <Text style={styles.commentUser}>{comments[0].userId} </Text> {comments[0].text}
-                </Text>
-              </View>
-            )}
-            <View style={styles.commentInputContainer}>
+          <View style={styles.commentInputContainer}>
             <TextInput
                 style={[styles.commentInput, {width: comments.length > 0 ? '95%' : '100%'}]}
                 placeholder="Add a comment..."
@@ -156,14 +189,40 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
               onChangeText={setNewComment}
               onSubmitEditing={handleComment}
             />
-           {newComment.trim().length > 0 && (
-            <TouchableOpacity onPress={handleComment} style={styles.submitButton}>
-        <Ionicons name="arrow-forward" size={20} color="#0D0D0D" />
-            </TouchableOpacity>)}
-            </View>
+            {newComment.trim().length > 0 && (
+              <TouchableOpacity onPress={handleComment} style={styles.submitButton}>
+                <Ionicons name="arrow-forward" size={20} color="#0D0D0D" />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : (
+          <View>
+          {comments.length > 0 && (
+          <View style={styles.comment}>
+            <Text style={styles.commentText}>
+              <Text style={styles.commentUser}>
+                {commentUsernames[comments[comments.length - 1].userId]}
+              </Text> 
+              {comments[comments.length - 1].text}
+            </Text>
           </View>
         )}
-
+          <View style={styles.commentInputContainer}>
+            <TextInput
+              style={[styles.commentInput, { width: comments.length > 0 ? '95%' : '100%' }]}
+              placeholder="Add a comment..."
+              value={newComment}
+              onChangeText={setNewComment}
+              onSubmitEditing={handleComment}
+            />
+            {newComment.trim().length > 0 && (
+              <TouchableOpacity onPress={handleComment} style={styles.submitButton}>
+                <Ionicons name="arrow-forward" size={20} color="#0D0D0D" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      )}
         <Modal
           animationType="slide"
           transparent={true}
@@ -175,17 +234,20 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
           </TouchableWithoutFeedback>
           <View style={styles.modalContent}>
           <Text style={[styles.modalTitle,{marginBottom: '10%'}]}>Comments</Text>
-            <FlatList
-              data={comments}
-              renderItem={({ item }) => (
-                <View style={styles.comment}>
-                  <Text style={styles.commentText}>
-                    <Text style={styles.commentUser}>{item.userId}:</Text> {item.text}
-                  </Text>
-                </View>
-              )}
-              keyExtractor={(item, index) => index.toString()}
-            />
+          <FlatList
+                    data={comments}
+                    renderItem={({ item }) => (
+                      <View style={styles.comment}>
+                        <Text style={styles.commentText}>
+                          <Text style={styles.commentUser}>
+                            {commentUsernames[item.userId] || 'Unknown User'}
+                          </Text> 
+                          {item.text}
+                        </Text>
+                      </View>
+                    )}
+                    keyExtractor={(item, index) => index.toString()}
+                  />
             <View style={[styles.commentInputContainer,{ marginBottom: '10%'}]}>
             <TextInput
                 style={[styles.commentInput, {width: comments.length > 0 ? '95%' : '100%'}]}
@@ -256,6 +318,7 @@ const styles = StyleSheet.create({
   },
   commentUser: {
     fontWeight: 'bold',
+    paddingRight: 10,
   },
   modalOverlay: {
     flex: 1,

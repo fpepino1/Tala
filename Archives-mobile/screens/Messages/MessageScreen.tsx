@@ -3,8 +3,11 @@ import { View, TextInput, TouchableOpacity, FlatList, Text, StyleSheet, Keyboard
 import { sendMessage, useMessages } from './MessageFunctions';
 import { StackParamList } from '../../navigation/types';
 import { StackNavigationProp } from '@react-navigation/stack';
-
+import { useNavigation } from '@react-navigation/native';
+import { FIREBASE_DB } from '../../FirebaseConfig';
+import { doc, getDoc, onSnapshot, serverTimestamp, setDoc,  where,  getDocs } from 'firebase/firestore';
 const MessageScreen = ({ route }) => {
+  const navigation = useNavigation<StackNavigationProp<StackParamList, 'MessageScreen'>>();
   const { userId, chatRoomId, photoUrl, name, username, currentUserId } = route.params;
   const messages = useMessages(chatRoomId);
   const [message, setMessage] = useState('');
@@ -29,7 +32,29 @@ const MessageScreen = ({ route }) => {
   };
 
   const reversedMessages = Array.isArray(messages) ? [...messages].reverse() : [];
-
+  // const goToUserProfile = async () => {
+  //   if (user) {
+  //     try {
+  //       // Fetch the user's posts
+  //       const postsRef = collection(FIREBASE_DB, 'users', uid, 'posts');
+  //       const postsSnapshot = await getDocs(postsRef);
+  
+  //       const userPosts: any[] = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  
+  //       navigation.navigate('UserProfile', {
+  //         username: user.username,
+  //         name: user.name,
+  //         photoUrl: user.photoUrl,
+  //         bio: user.bio,
+  //         userId: uid,
+  //         posts: userPosts, 
+  //       });
+  //     } catch (error) {
+  //       console.error('Error fetching user posts:', error);
+  //     }
+  //   }
+  // };
+  
 
 
   return (
