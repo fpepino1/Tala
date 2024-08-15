@@ -49,22 +49,22 @@ const NotificationsScreen = () => {
   }, []);
 
   if (loading) {
-    return null;
+    return <View style={styles.container}></View>;
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#F8F3FA' }}>
         <View style={styles.container}>
         <FlatList
           data={notifications}
           renderItem={({ item }) => (
-            <TouchableOpacity>
+            <TouchableOpacity
+            onPress={() => {}}>
               <View style={styles.notificationItem}>
                 <Image source={{ uri: item.fromUserPhotoUrl }} style={styles.avatar} />
                 <Text style={styles.notificationText}>
                   <Text style={styles.username}>{item.fromUsername}</Text>
-                  {item.type === 'like' ? ' liked your post' : ' commented on your post'}
+                  {item.type === 'like' ? ' liked your post.' : ' commented on your post.'}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -72,7 +72,6 @@ const NotificationsScreen = () => {
           keyExtractor={(item) => item.id}
         />
       </View>
-      </SafeAreaView>
     </GestureHandlerRootView>
   );
 };
@@ -80,17 +79,18 @@ const NotificationsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginTop: '20%',
     backgroundColor: '#F8F3FA',
   },
   notificationItem: {
     flexDirection: 'row',
-    padding: 10,
+    padding: 20,
     alignItems: 'center',
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 100,
     marginRight: 10,
   },
   username: {

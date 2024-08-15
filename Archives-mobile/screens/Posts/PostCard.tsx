@@ -13,7 +13,7 @@ interface PostData {
   postImage: string;
   description?: string;
   likes?: string[];
-  comments?: { userId: string; text: string }[];
+  comments?: { id: string; userId: string; text: string }[];
 }
 
 interface PostCardProps {
@@ -28,10 +28,10 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [newComment, setNewComment] = useState('');
-  const [comments, setComments] = useState<{ userId: string; text: string }[]>([]);
+  const [comments, setComments] = useState<{ id: string; userId: string; text: string }[]>([]);
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [commentUsernames, setCommentUsernames] = useState<{ [userId: string]: string }>({});
+  // const [commentUsernames, setCommentUsernames] = useState<{ [userId: string]: string }>({});
 
   const navigation = useNavigation<UserProfileScreenNavigationProp>();
   
@@ -57,27 +57,31 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
 
   }, [uid, postId]);
 
-  useEffect(() => {
-    const fetchCommentUsernames = async () => {
-      const usernames: { [userId: string]: string } = {};
-      const uniqueUserIds = Array.from(new Set(comments.map(comment => comment.userId)));
+  const [commentUserDetails, setCommentUserDetails] = useState<{ [userId: string]: { username: string, avatar: string } }>({});
 
-      for (const userId of uniqueUserIds) {
-        const userRef = doc(FIREBASE_DB, 'users', userId);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          usernames[userId] = userSnap.data()?.username || '';
-        }
+useEffect(() => {
+  const fetchCommentUserDetails = async () => {
+    const userDetails: { [userId: string]: { username: string, avatar: string } } = {};
+    const uniqueUserIds = Array.from(new Set(comments.map(comment => comment.userId)));
+
+    for (const userId of uniqueUserIds) {
+      const userRef = doc(FIREBASE_DB, 'users', userId);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        userDetails[userId] = {
+          username: userSnap.data()?.username || 'Unknown User',
+          avatar: userSnap.data()?.photoUrl || '',
+        };
       }
-
-      setCommentUsernames(usernames);
-    };
-
-    if (!loading) {
-      fetchCommentUsernames();
     }
-  }, [comments, loading]);
 
+    setCommentUserDetails(userDetails);
+  };
+
+  if (!loading) {
+    fetchCommentUserDetails();
+  }
+}, [comments, loading]);
   const createNotification = async (type: 'like' | 'comment', postOwnerId: string, fromUserId: string, postId: string) => {
     const notificationRef = collection(FIREBASE_DB, 'notifications');
     await addDoc(notificationRef, {
@@ -111,7 +115,7 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   const handleComment = async () => {
     if (newComment.trim() && post) {
       const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
-      const commentId = new Date().getTime().toString(); // or use a UUID library
+      const commentId = new Date().getTime().toString(); 
       const comment = { id: commentId, userId: FIREBASE_AUTH.currentUser?.uid || '', text: newComment.trim() };
       setComments([...comments, comment]);
       setNewComment('');
@@ -145,12 +149,16 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
             style: 'destructive',
             onPress: async () => {
               const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
-              const commentDocRef = doc(postRef, 'comments', commentId);
+              
+              const commentToRemove = comments.find(comment => comment.id === commentId);
+              if (commentToRemove) {
+                await updateDoc(postRef, {
+                  comments: arrayRemove(commentToRemove),
+                });
   
-              await deleteDoc(commentDocRef);
-  
-              setComments(prevComments => prevComments.filter(comment => comment.userId !== commentId));
-              console.log('Comment deleted');
+                setComments(prevComments => prevComments.filter(comment => comment.id !== commentId));
+                console.log('Comment deleted');
+              }
             },
           },
         ],
@@ -160,6 +168,7 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
       console.error('Error deleting comment:', error);
     }
   };
+  
   
   
   const handleDeletePost = async () => {
@@ -190,7 +199,6 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
                 await deleteDoc(likeDoc.ref);
               });
   
-              // Finally, delete the post itself
               await deleteDoc(postRef);
               console.log('Post and associated data deleted');
             },
@@ -205,7 +213,6 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   const goToUserProfile = async () => {
     if (user) {
       try {
-        // Fetch the user's posts
         const postsRef = collection(FIREBASE_DB, 'users', uid, 'posts');
         const postsSnapshot = await getDocs(postsRef);
   
@@ -300,7 +307,8 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
           <View>
             <Text style={styles.commentText}>
               <Text style={styles.commentUser}>
-                {commentUsernames[comments[comments.length - 1].userId]}
+
+              {commentUserDetails[comments[comments.length - 1].userId]?.username}
               </Text> 
               {comments[comments.length - 1].text}
             </Text>
@@ -336,15 +344,18 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
           <FlatList
   data={comments}
   renderItem={({ item }) => (
-    <View style={{flexDirection: 'row', justifyContent: 'space-between', padding:'2%'}}>
-      <Text style={{fontSize:14}}>  
-        <Text style={{ fontWeight: 'bold' }}>
-          {commentUsernames[item.userId] || 'Unknown User'}
-        </Text> 
-        {item.text}
-      </Text>      
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: '2%' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <Avatar.Image size={24} source={{ uri: commentUserDetails[item.userId]?.avatar }} />
+        <Text style={{ fontSize: 14, marginLeft: 8 }}>
+          <Text style={{ fontWeight: 'bold' }}>
+            {commentUserDetails[item.userId]?.username}
+          </Text>
+          {` ${item.text}`}
+        </Text>
+      </View>
       {FIREBASE_AUTH.currentUser?.uid === item.userId && (
-        <TouchableOpacity onPress={() => handleDeleteComment(item.userId)}>
+        <TouchableOpacity onPress={() => handleDeleteComment(item.id)}>
           <Ionicons name="trash-outline" size={20} color="#d9534f" />
         </TouchableOpacity>
       )}

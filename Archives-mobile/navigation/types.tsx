@@ -32,6 +32,7 @@ export type ConnectionsListProps = {
   route: ConnectionsListScreenRouteProp;
 };
 export type StackParamList = {
+  NotificationScreen: undefined;
   ConnectionsList: { userId: string; type: 'followers' | 'following' };
   Profile: { name: string; username: string; bio: string };
   ProfileStats: { userId: string };

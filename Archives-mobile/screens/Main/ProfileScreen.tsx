@@ -53,6 +53,7 @@ export default function ProfileScreen(){
 
   return (
     <ScrollView style={{ backgroundColor: '#F8F3FA'}}>
+      
         <View style={[styles.containerCenter, {marginTop:'15%'}]}>
     <MenuButton/>
           <Image
