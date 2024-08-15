@@ -85,7 +85,8 @@ export type StackParamList = {
 }
 
  
-  
+export type PostDetailScreenRouteProp = RouteProp<StackParamList, 'PostDetailScreen'>;
+
 export type TabParamList = {
   ProfileScreen: { name: string; username: string; bio: string };
   Feed: { postId: string; userId: string; postImage: string; description: string };

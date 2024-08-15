@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function PostDetailScreen({ route, navigation }: Props) {
-  const { userId, postId } = route.params;
+  const { userId, postId, postImage, description } = route.params;
   const [posts, setPosts] = useState<any[]>([]);
   const scrollViewRef = useRef<ScrollView>(null);
   const [targetPostLayout, setTargetPostLayout] = useState<{ [key: string]: number }>({});

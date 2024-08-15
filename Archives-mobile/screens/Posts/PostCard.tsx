@@ -31,7 +31,6 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   const [comments, setComments] = useState<{ id: string; userId: string; text: string }[]>([]);
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  // const [commentUsernames, setCommentUsernames] = useState<{ [userId: string]: string }>({});
 
   const navigation = useNavigation<UserProfileScreenNavigationProp>();
   

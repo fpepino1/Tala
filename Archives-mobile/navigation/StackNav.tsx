@@ -42,6 +42,7 @@ export default function StackNav() {
       >
         <Stack.Screen name="LoginScreen" component={LoginScreen} options={{ headerShown: false, headerTitle: '' }} />
         <Stack.Screen name="RegisterScreen" component={RegisterScreen} options={{ headerTitle: '', headerShown: true }} />
+        <Stack.Screen name="NotificationScreen" component={NotificationScreen} />
 
         <Stack.Screen
           name="ProfileSetUpScreen"
