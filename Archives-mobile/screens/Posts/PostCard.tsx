@@ -285,7 +285,7 @@ useEffect(() => {
           <Paragraph style={styles.description}>{post.description}</Paragraph>
         </View>
        
-        {comments.length === 0 ? (
+        {/* {comments.length === 0 ? (
           <View style={styles.commentInputContainer}>
             <TextInput
                 style={[styles.commentInput, {width: comments.length > 0 ? '95%' : '100%'}]}
@@ -300,7 +300,7 @@ useEffect(() => {
               </TouchableOpacity>
             )}
           </View>
-        ) : (
+        ) : ( */}
           <View>
           {comments.length > 0 && (
           <View>
@@ -328,7 +328,7 @@ useEffect(() => {
             )}
           </View>
         </View>
-      )}
+      {/* )} */}
         <Modal
           animationType="slide"
           transparent={true}
