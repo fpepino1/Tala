@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, FlatList, Text, StyleSheet, KeyboardAvoidingView, Platform, Keyboard, Image } from 'react-native';
+import { View, TextInput, TouchableOpacity, FlatList, Text, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { sendMessage, useMessages } from './MessageFunctions';
 import { StackParamList } from '../../navigation/types';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -13,36 +13,93 @@ const MessageScreen = ({ route }) => {
 
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return '';
-    const date = timestamp.toDate();  
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); 
+    const date = timestamp.toDate();
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  useEffect(() => {
-    console.log('Chat Room ID:', chatRoomId);
-    console.log('User ID:', userId);
-    console.log('Current User ID:', currentUserId);
-    console.log('Messages:', messages);
-  }, [messages]);
+  const formatDateHeader = (timestamp) => {
+    if (!timestamp) return '';
+    const date = timestamp.toDate();
+    const today = new Date();
+    const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const yesterdayDate = new Date(todayDate);
+    yesterdayDate.setDate(todayDate.getDate() - 1);
+
+    if (messageDate.getTime() === todayDate.getTime()) {
+      return 'Today';
+    } else if (messageDate.getTime() === yesterdayDate.getTime()) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
+    }
+  };
+
+  const groupMessagesByDate = (messages) => {
+    const groupedMessages = [];
+    let currentDate = null;
+
+    messages.reverse().forEach((message) => {
+      const messageDate = formatDateHeader(message.timestamp);
+
+      if (messageDate !== currentDate) {
+        currentDate = messageDate;
+        groupedMessages.push({ type: 'header', date: currentDate });
+      }
+
+      groupedMessages.push({ type: 'message', ...message });
+    });
+
+    return groupedMessages.reverse();
+  };
+
+  const reversedMessages = [...messages].reverse();
+  const groupedMessages = groupMessagesByDate(reversedMessages);
+
   useEffect(() => {
     navigation.setOptions({
       headerTitle: () => (
-     
-        <View style={{marginHorizontal:'auto', alignItems: 'center'}}>
-            <Text style={styles.name}>{name}</Text>
-            <Text style={styles.username}>{username}</Text>
+        <View style={{ marginHorizontal: 'auto', alignItems: 'center' }}>
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.username}>{username}</Text>
         </View>
-
       ),
     });
   }, [navigation, photoUrl, name, username]);
+
   const handleSend = () => {
     if (message.trim()) {
-      sendMessage(chatRoomId, currentUserId, userId, message, photoUrl, name, username);  
+      sendMessage(chatRoomId, currentUserId, userId, message, photoUrl, name, username);
       setMessage('');
     }
   };
 
-  const reversedMessages = Array.isArray(messages) ? [...messages].reverse() : [];
+  const renderItem = ({ item }) => {
+    if (item.type === 'header') {
+      return (
+        <View style={styles.dateHeader}>
+          <Text style={styles.dateHeaderText}>{item.date}</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={[
+        styles.messageContainer,
+        item.senderId === currentUserId ? styles.messageSent : styles.messageReceived
+      ]}>
+        <View style={[
+          styles.messageBubble,
+          { backgroundColor: item.senderId === currentUserId ? '#0d0d0d' : '#d9d9d9' },
+        ]}>
+          <Text style={[styles.messageText, { color: item.senderId === currentUserId ? '#fff' : '#000' }]}>{item.message}</Text>
+          <Text style={[styles.messageTimestamp, { color: item.senderId === currentUserId ? '#fff' : '#000' }]}>
+            {formatTimestamp(item.timestamp)}
+          </Text>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <KeyboardAvoidingView
@@ -51,39 +108,16 @@ const MessageScreen = ({ route }) => {
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 20}
     >
       <View style={styles.container}>
-        {/* <View style={styles.header}>
-          <Image source={{ uri: photoUrl }} style={styles.profileImage} />
-          <View style={styles.headerText}>
-            <Text style={styles.name}>{name}</Text>
-            <Text style={styles.username}>{username}</Text>
-          </View>
-        </View> */}
-
         <FlatList
-          data={reversedMessages}
-          renderItem={({ item }) => (
-            <View style={[
-              styles.messageContainer,
-              item.senderId === currentUserId ? styles.messageSent : styles.messageReceived
-            ]}>
-              <View style={[
-                styles.messageBubble,
-                { backgroundColor: item.senderId === currentUserId ? '#0d0d0d' : '#d9d9d9' },
-              ]}>
-                <Text style={[styles.messageText, { color: item.senderId === currentUserId ? '#fff' : '#000' }]}>{item.message}</Text>
-                <Text style={[styles.messageTimestamp, { color: item.senderId === currentUserId ? '#fff' : '#000' }]}>
-                  {formatTimestamp(item.timestamp)}
-                </Text>
-              </View>
-            </View>
-          )}
-          keyExtractor={(item) => item.id}
+          data={groupedMessages}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => item.id || index.toString()}
           ListEmptyComponent={<Text style={styles.emptyMessage}>Start a conversation</Text>}
-          keyboardDismissMode="on-drag"   
+          keyboardDismissMode="on-drag"
           inverted
-          showsVerticalScrollIndicator={false}  
-          contentInsetAdjustmentBehavior="automatic"  
-          style={{ flex: 1 }}  
+          showsVerticalScrollIndicator={false}
+          contentInsetAdjustmentBehavior="automatic"
+          style={{ flex: 1 }}
         />
 
         <View style={styles.inputWrapper}>
@@ -111,20 +145,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8F3FA',
-  },
-  header: {
-    alignItems: 'center',
-    padding: '1%',
-    paddingHorizontal: '3%',
-  },
-  profileImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
-  },
-  headerText: {
-    marginVertical: 20,
   },
   name: {
     fontSize: 16,
@@ -189,6 +209,14 @@ const styles = StyleSheet.create({
   emptyMessage: {
     textAlign: 'center',
     marginVertical: 20,
+    color: '#888',
+  },
+  dateHeader: {
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  dateHeaderText: {
+    fontSize: 14,
     color: '#888',
   },
 });
