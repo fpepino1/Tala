@@ -9,7 +9,7 @@ import { StackParamList } from '../../navigation/types';
 interface Notification {
   id: string;
   fromUserId: string;
-  type: 'like' | 'comment';
+  type: 'like' | 'comment' | 'follow'; // Added 'follow' type
   fromUsername?: string;
   fromUserPhotoUrl?: string;
   postId?: string;
@@ -35,7 +35,7 @@ const NotificationsScreen = () => {
         return {
           id: doc.id,
           fromUserId: data.fromUserId,
-          type: data.type,
+          type: data.type, // Ensure this includes 'follow'
           postId: data.postId,
           postImage: data.postImage,
           description: data.description,
@@ -97,7 +97,9 @@ const NotificationsScreen = () => {
                 <Image source={{ uri: item.fromUserPhotoUrl }} style={styles.avatar} />
                 <Text style={styles.notificationText}>
                   <Text style={styles.username}>{item.fromUsername}</Text>
-                  {item.type === 'like' ? ' liked your post.' : ' commented on your post.'}
+                  {item.type === 'like' ? ' liked your post.' :
+                   item.type === 'comment' ? ' commented on your post.' :
+                   ' started following you.'} {/* Added logic for 'follow' type */}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -112,7 +114,7 @@ const NotificationsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: '20%',
+    paddingTop: '20%',
     backgroundColor: '#F8F3FA',
   },
   notificationItem: {

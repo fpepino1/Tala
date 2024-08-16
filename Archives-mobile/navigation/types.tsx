@@ -3,6 +3,7 @@ import { RouteProp } from '@react-navigation/native';
 import MessageScreen from '../screens/Messages/MessageScreen';
 import Messages from '../screens/Messages/Messages';
 import { StackNavigationProp } from '@react-navigation/stack';
+
 export type MessageScreenNavigationProp = NativeStackNavigationProp<StackParamList, 'MessageScreen'>;
 
 export interface ChatRoom {
@@ -14,25 +15,24 @@ export interface ChatRoom {
   lastMessage?: string; 
 }
 
-// Define navigation prop type for ConnectionsList screen
 export type ConnectionsListScreenNavigationProp = StackNavigationProp<
 StackParamList,
   'ConnectionsList'
 >;
 
-// Define route prop type for ConnectionsList screen
 export type ConnectionsListScreenRouteProp = RouteProp<
   StackParamList,
   'ConnectionsList'
 >;
 
-// Combine props for ConnectionsList screen
 export type ConnectionsListProps = {
   navigation: ConnectionsListScreenNavigationProp;
   route: ConnectionsListScreenRouteProp;
 };
 export type StackParamList = {
   NotificationScreen: undefined;
+  LikesScreen: { postId: string; userId: string };
+
   ConnectionsList: { userId: string; type: 'followers' | 'following' };
   Profile: { name: string; username: string; bio: string };
   ProfileStats: { userId: string };

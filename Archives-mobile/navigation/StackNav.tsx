@@ -18,6 +18,7 @@ import Messages from '../screens/Messages/Messages';
 import ForgotPasswordScreen from '../screens/Auth/ForgotPasswordScreen';
 import ConnectionsList from '../screens/Main/ConnectionsList';
 import NotificationScreen from '../screens/Main/NotificationScreen';
+import LikesScreen from '../screens/Main/LikesScreen';
 const Stack = createNativeStackNavigator<StackParamList>();
 
 const CloseButton: React.FC<CloseButtonProps> = ({ navigation }) => {
@@ -43,6 +44,7 @@ export default function StackNav() {
         <Stack.Screen name="LoginScreen" component={LoginScreen} options={{ headerShown: false, headerTitle: '' }} />
         <Stack.Screen name="RegisterScreen" component={RegisterScreen} options={{ headerTitle: '', headerShown: true }} />
         <Stack.Screen name="NotificationScreen" component={NotificationScreen} />
+        <Stack.Screen name="LikesScreen" component={LikesScreen} options={{ headerTitle: 'Likes', headerShown: true }} />
 
         <Stack.Screen
           name="ProfileSetUpScreen"

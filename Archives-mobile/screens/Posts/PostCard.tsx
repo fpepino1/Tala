@@ -36,25 +36,30 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   
   useEffect(() => {
     const fetchData = async () => {
-      const userData = await fetchUserData(uid);
-      setUser(userData);
+      try {
+        const userData = await fetchUserData(uid);
+        setUser(userData);
 
-      const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
-      const postSnap = await getDoc(postRef);
+        const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
+        const postSnap = await getDoc(postRef);
 
-      if (postSnap.exists()) {
-        setPost(postSnap.data());
-        setComments(postSnap.data()?.comments || []);
+        if (postSnap.exists()) {
+          const postData = postSnap.data();
+          setPost(postData);
+
+          const userHasLiked = postData.likes?.includes(FIREBASE_AUTH.currentUser?.uid || '');
+          setLiked(userHasLiked || false);
+        }
+      } catch (error) {
+        console.error("Error fetching post data:", error);
+      } finally {
+        setLoading(false);
       }
-
-    
-      setLoading(false);
     };
 
     fetchData();
-    
-
   }, [uid, postId]);
+
 
   const [commentUserDetails, setCommentUserDetails] = useState<{ [userId: string]: { username: string, avatar: string } }>({});
 
@@ -91,22 +96,28 @@ useEffect(() => {
       timestamp: new Date().toISOString(),
     });
   };
-  
+  const handleGoToLikesScreen = () => {
+    navigation.navigate('LikesScreen', {
+      postId: postId,
+      userId: uid,
+    });
+  };
   const handleLike = async () => {
     if (post) {
       const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
-      const userHasLiked = post.likes?.includes(uid) || false;
+      const userId = FIREBASE_AUTH.currentUser?.uid || '';
+      const userHasLiked = post.likes?.includes(userId) || false;
 
       const newLikes = userHasLiked
-        ? post.likes?.filter(id => id !== uid)
-        : [...(post.likes || []), uid];
+        ? post.likes?.filter(id => id !== userId)
+        : [...(post.likes || []), userId];
 
       setLiked(!userHasLiked);
       await updateDoc(postRef, { likes: newLikes });
       setPost(prevPost => prevPost ? { ...prevPost, likes: newLikes } : null);
 
       if (!userHasLiked) {
-        await createNotification('like', uid, FIREBASE_AUTH.currentUser?.uid || '', postId);
+        await createNotification('like', uid, userId, postId);
       }
     }
   };
@@ -231,7 +242,11 @@ useEffect(() => {
     }
   };
   
-
+ 
+  
+  
+  
+  
   if (loading) {
     return null;
   } else if (!user || !post) {
@@ -273,7 +288,9 @@ useEffect(() => {
         </TouchableOpacity> */}
       </View>
       <Card.Content>
-        <TouchableOpacity>
+        <TouchableOpacity 
+        onPress={handleGoToLikesScreen}
+        >
         <Text style={{ fontWeight: 'bold', marginTop: 10 }}>
           {post.likes?.length > 0 ? `${post.likes.length} likes` : ''}
         </Text>
@@ -284,23 +301,7 @@ useEffect(() => {
           </TouchableOpacity>
           <Paragraph style={styles.description}>{post.description}</Paragraph>
         </View>
-       
-        {/* {comments.length === 0 ? (
-          <View style={styles.commentInputContainer}>
-            <TextInput
-                style={[styles.commentInput, {width: comments.length > 0 ? '95%' : '100%'}]}
-                placeholder="Add a comment..."
-              value={newComment}
-              onChangeText={setNewComment}
-              onSubmitEditing={handleComment}
-            />
-            {newComment.trim().length > 0 && (
-              <TouchableOpacity onPress={handleComment} style={styles.submitButton}>
-                <Ionicons name="arrow-forward" size={20} color="#0D0D0D" />
-              </TouchableOpacity>
-            )}
-          </View>
-        ) : ( */}
+      
           <View>
           {comments.length > 0 && (
           <View>
@@ -313,22 +314,8 @@ useEffect(() => {
             </Text>
           </View>
         )}
-          <View style={styles.commentInputContainer}>
-            <TextInput
-              style={[styles.commentInput, { width: comments.length > 0 ? '95%' : '100%' }]}
-              placeholder="Add a comment..."
-              value={newComment}
-              onChangeText={setNewComment}
-              onSubmitEditing={handleComment}
-            />
-            {newComment.trim().length > 0 && (
-              <TouchableOpacity onPress={handleComment} style={styles.submitButton}>
-                <Ionicons name="arrow-forward" size={20} color="#0D0D0D" />
-              </TouchableOpacity>
-            )}
-          </View>
         </View>
-      {/* )} */}
+    
         <Modal
           animationType="slide"
           transparent={true}
