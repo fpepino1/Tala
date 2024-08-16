@@ -72,9 +72,7 @@ const LikesScreen = ({ route }: LikesScreenProps) => {
     fetchLikedUsers();
   }, [postId, userId]);
 
-  if (loading) {
-    return <Text>Loading...</Text>;
-  }
+
 
   return (
     <View style={styles.container}>

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Image, View, Text, TouchableOpacity, TextInput, FlatList, Modal, TouchableWithoutFeedback, Alert } from 'react-native';
 import { Avatar, Card, Paragraph } from 'react-native-paper';
 import { fetchUserData } from '../Main/UserData';
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, getDocs, collection, deleteDoc, query, addDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, getDocs, collection, deleteDoc, query, addDoc, where } from 'firebase/firestore';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../../FirebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -33,20 +33,23 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   const [modalVisible, setModalVisible] = useState(false);
 
   const navigation = useNavigation<UserProfileScreenNavigationProp>();
-  
   useEffect(() => {
     const fetchData = async () => {
       try {
         const userData = await fetchUserData(uid);
         setUser(userData);
-
+  
         const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
         const postSnap = await getDoc(postRef);
-
+  
         if (postSnap.exists()) {
           const postData = postSnap.data();
           setPost(postData);
-
+  
+          // Fetch comments
+          const comments = postData.comments || [];
+          setComments(comments);
+  
           const userHasLiked = postData.likes?.includes(FIREBASE_AUTH.currentUser?.uid || '');
           setLiked(userHasLiked || false);
         }
@@ -56,10 +59,10 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
         setLoading(false);
       }
     };
-
+  
     fetchData();
   }, [uid, postId]);
-
+  
 
   const [commentUserDetails, setCommentUserDetails] = useState<{ [userId: string]: { username: string, avatar: string } }>({});
 
@@ -102,25 +105,7 @@ useEffect(() => {
       userId: uid,
     });
   };
-  const handleLike = async () => {
-    if (post) {
-      const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
-      const userId = FIREBASE_AUTH.currentUser?.uid || '';
-      const userHasLiked = post.likes?.includes(userId) || false;
-
-      const newLikes = userHasLiked
-        ? post.likes?.filter(id => id !== userId)
-        : [...(post.likes || []), userId];
-
-      setLiked(!userHasLiked);
-      await updateDoc(postRef, { likes: newLikes });
-      setPost(prevPost => prevPost ? { ...prevPost, likes: newLikes } : null);
-
-      if (!userHasLiked) {
-        await createNotification('like', uid, userId, postId);
-      }
-    }
-  };
+  
 
   const handleComment = async () => {
     if (newComment.trim() && post) {
@@ -146,37 +131,6 @@ useEffect(() => {
 
   const closeCommentModal = () => {
     setModalVisible(false);
-  };
-  const handleDeleteComment = async (commentId: string) => {
-    try {
-      Alert.alert(
-        'Delete Comment',
-        'Are you sure you want to delete this comment?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Delete',
-            style: 'destructive',
-            onPress: async () => {
-              const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
-              
-              const commentToRemove = comments.find(comment => comment.id === commentId);
-              if (commentToRemove) {
-                await updateDoc(postRef, {
-                  comments: arrayRemove(commentToRemove),
-                });
-  
-                setComments(prevComments => prevComments.filter(comment => comment.id !== commentId));
-                console.log('Comment deleted');
-              }
-            },
-          },
-        ],
-        { cancelable: true }
-      );
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-    }
   };
   
   
@@ -242,14 +196,99 @@ useEffect(() => {
     }
   };
   
+  const deleteNotification = async (notificationId: string) => {
+    try {
+      const notificationRef = doc(FIREBASE_DB, 'notifications', notificationId);
+      await deleteDoc(notificationRef);
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
+  };
+  
+  const handleLike = async () => {
+    if (post) {
+      const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
+      const userId = FIREBASE_AUTH.currentUser?.uid || '';
+      const userHasLiked = post.likes?.includes(userId) || false;
+  
+      const newLikes = userHasLiked
+        ? post.likes?.filter(id => id !== userId)
+        : [...(post.likes || []), userId];
+  
+      setLiked(!userHasLiked);
+      await updateDoc(postRef, { likes: newLikes });
+      setPost(prevPost => prevPost ? { ...prevPost, likes: newLikes } : null);
+  
+      if (userHasLiked) {
+        const notificationsQuery = query(
+          collection(FIREBASE_DB, 'notifications'),
+          where('userId', '==', uid),
+          where('type', '==', 'like'),
+          where('postId', '==', postId),
+          where('fromUserId', '==', userId)
+        );
+        const notificationsSnapshot = await getDocs(notificationsQuery);
+        notificationsSnapshot.forEach(async (doc) => {
+          await deleteNotification(doc.id);
+        });
+      } else {
+        await createNotification('like', uid, userId, postId);
+      }
+    }
+  };
+  
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      Alert.alert(
+        'Delete Comment',
+        'Are you sure you want to delete this comment?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
+              
+              const commentToRemove = comments.find(comment => comment.id === commentId);
+              if (commentToRemove) {
+                await updateDoc(postRef, {
+                  comments: arrayRemove(commentToRemove),
+                });
+  
+                setComments(prevComments => prevComments.filter(comment => comment.id !== commentId));
+                console.log('Comment deleted');
+                
+                const notificationsQuery = query(
+                  collection(FIREBASE_DB, 'notifications'),
+                  where('userId', '==', uid),
+                  where('type', '==', 'comment'),
+                  where('postId', '==', postId),
+                  where('fromUserId', '==', FIREBASE_AUTH.currentUser?.uid || '')
+                );
+                const notificationsSnapshot = await getDocs(notificationsQuery);
+                notificationsSnapshot.forEach(async (doc) => {
+                  await deleteNotification(doc.id);
+                });
+              }
+            },
+          },
+        ],
+        { cancelable: true }
+      );
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
+  };
+  
  
   
-  
-  
-  
   if (loading) {
-    return null;
-  } else if (!user || !post) {
+    return;
+  }
+  
+  
+  else if (!user || !post) {
     return <Paragraph>No data found.</Paragraph>;
   }
   return (
@@ -257,7 +296,7 @@ useEffect(() => {
     style={[styles.card]}>
          <TouchableOpacity onPress={goToUserProfile}>
 
-         <Card.Title
+<Card.Title
   title={user.username}
   left={(props) => <Avatar.Image {...props} source={{ uri: user.photoUrl }} />}
   right={(props) =>
