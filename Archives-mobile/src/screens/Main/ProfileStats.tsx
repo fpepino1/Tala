@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { FIREBASE_DB } from '../../FirebaseConfig';
+import { FIREBASE_DB } from '../../../FirebaseConfig';
 import { collection, doc, onSnapshot, getDoc } from 'firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';

@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Logo from '../../components/common/logo';
-import { FIREBASE_AUTH } from '../../FirebaseConfig';
-import { FIREBASE_DB } from '../../FirebaseConfig';
+import Logo from '../Main/logo';
+import { FIREBASE_AUTH } from '../../../FirebaseConfig';
+import { FIREBASE_DB } from '../../../FirebaseConfig';
 import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { LoginScreenProps } from '../../navigation/types';
 import { doc, getDoc } from 'firebase/firestore';

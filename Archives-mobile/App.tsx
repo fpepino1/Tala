@@ -1,17 +1,8 @@
-import React from 'react';
-import AppNavigator from './navigation/StackNav';
-import { StyleSheet, View} from 'react-native';
-import EditProfileScreen from './screens/Main/EditProfileScreen';
-export default function App() {
-  return (
-    <AppNavigator />
-     
-  );
-}
+// App.tsx
 
-const style=StyleSheet.create({
-  container:{
-    backgroundColor: '#F8F3FA'
-  }
-});
- 
+import React from 'react';
+import StackNav from './src/navigation/StackNav';
+
+export default function App() {
+  return <StackNav />;
+}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { SafeAreaView, Linking, TouchableOpacity, View, Text, StyleSheet, Image } from 'react-native';
-import { FIREBASE_AUTH } from '../../FirebaseConfig';
+import { FIREBASE_AUTH } from '../../../FirebaseConfig';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParamList } from '../../navigation/types';
 import { useNavigation } from '@react-navigation/native';
@@ -35,14 +35,14 @@ export default function MenuScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <TouchableOpacity onPress={editProfile} style={styles.touchable}>
-                <Image style={styles.icon} source={require('../../assets/images/image 18.png')} />
+                <Image style={styles.icon} source={require('../../../assets/images/image 18.png')} />
                 <Text style={styles.text}>Edit profile</Text>
             </TouchableOpacity>
             <View style={styles.dividerContainer}>
                     <View style={styles.divider} />
                 </View>
             <TouchableOpacity onPress={handleLogout} style={styles.touchable}>
-                <Image style={styles.icon} source={require('../../assets/images/image 30.png')} />
+                <Image style={styles.icon} source={require('../../../assets/images/image 30.png')} />
                 <Text style={styles.text}>Log out</Text>
                
             </TouchableOpacity>

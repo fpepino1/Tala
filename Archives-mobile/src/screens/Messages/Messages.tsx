@@ -3,9 +3,9 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react
 import { useChatRooms } from './MessageFunctions';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { StackParamList } from '../../navigation/types';
-import { FIREBASE_AUTH } from '../../FirebaseConfig';
+import { FIREBASE_AUTH } from '../../../FirebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
-import { FIREBASE_DB } from '../../FirebaseConfig';
+import { FIREBASE_DB } from '../../../FirebaseConfig';
 
 interface MessagesProps {
   currentUserId: string;
@@ -78,7 +78,7 @@ const Messages: React.FC<MessagesProps> = () => {
   return (
     <View style={styles.container}>
       {chatRooms.length === 0 ? (
-        <Text style={styles.emptyText}>No chats available</Text>
+        <Text style={styles.emptyText}>Follow a friend to start messaging</Text>
       ) : (
         <FlatList
           data={chatRooms}

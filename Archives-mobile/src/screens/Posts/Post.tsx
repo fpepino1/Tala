@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Image, StyleSheet, TextInput, ActivityInd
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { onAuthStateChanged } from 'firebase/auth';
-import { FIREBASE_DB, FIREBASE_STORAGE, FIREBASE_AUTH } from '../../FirebaseConfig';
+import { FIREBASE_DB, FIREBASE_STORAGE, FIREBASE_AUTH } from '../../../FirebaseConfig';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { doc, addDoc, collection } from 'firebase/firestore';
 import { SafeAreaView } from "react-native-safe-area-context";

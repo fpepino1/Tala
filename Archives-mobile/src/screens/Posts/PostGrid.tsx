@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Image, FlatList, StyleSheet, Dimensions, Text, TouchableOpacity } from 'react-native';
-import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig'; 
+import { FIREBASE_DB, FIREBASE_AUTH } from '../../../FirebaseConfig'; 
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useFocusEffect } from '@react-navigation/native';

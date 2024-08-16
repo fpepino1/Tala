@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { Avatar } from 'react-native-paper';
 import { doc, getDoc } from 'firebase/firestore';
-import { FIREBASE_DB } from '../../FirebaseConfig';
+import { FIREBASE_DB } from '../../../FirebaseConfig';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParamList } from '../../navigation/types';

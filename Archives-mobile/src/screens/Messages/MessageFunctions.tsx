@@ -1,5 +1,5 @@
 import { collection, addDoc, setDoc, serverTimestamp, doc, onSnapshot, orderBy, query, writeBatch, getDocs } from 'firebase/firestore';
-import { FIREBASE_DB } from '../../FirebaseConfig';
+import { FIREBASE_DB } from '../../../FirebaseConfig';
 import { useState, useEffect } from 'react';
 import { getFirestore } from 'firebase/firestore';
 

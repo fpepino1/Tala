@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { ScrollView, StyleSheet, View, Text, LayoutChangeEvent } from 'react-native';
-import { FIREBASE_DB } from '../../FirebaseConfig';
+import { FIREBASE_DB } from '../../../FirebaseConfig';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import PostCard from './PostCard';
 import { RouteProp } from '@react-navigation/native';

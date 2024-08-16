@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { doc, getDoc } from 'firebase/firestore';
-import { FIREBASE_DB } from '../../FirebaseConfig';
+import { FIREBASE_DB } from '../../../FirebaseConfig';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { StackParamList } from '../../navigation/types';
+import { goToUserProfile } from './functions';
 
 export default function ConnectionsList({ route }) {
+  const navigation = useNavigation<StackNavigationProp<StackParamList, 'ConnectionsList'>>();
   const { userId, type } = route.params;
-  const [userList, setUserList] = useState([]);
+  const [userList, setUserList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const handleUserPress = (navigation, userId: string) => {
+    goToUserProfile(navigation, userId);  // Call the function without passing navigation
+  };
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -22,7 +29,7 @@ export default function ConnectionsList({ route }) {
               const userSnapshot = await getDoc(doc(FIREBASE_DB, 'users', uid));
               return userSnapshot.exists() ? { id: uid, ...userSnapshot.data() } : null;
             });
-            const usersData = (await Promise.all(userPromises)).filter(Boolean);
+            const usersData = (await Promise.all(userPromises)).filter(Boolean) as any[];
             setUserList(usersData);
           }
         }
@@ -36,12 +43,10 @@ export default function ConnectionsList({ route }) {
     fetchUsers();
   }, [userId, type]);
 
-  if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
-  }
+  
 
   if (error) {
-    return <Text style={styles.errorText}>{error}</Text>;
+console.log(error);
   }
 
   return (
@@ -50,12 +55,14 @@ export default function ConnectionsList({ route }) {
         data={userList}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.userContainer}>
-            <Image source={{ uri: item.photoUrl }} style={styles.avatar} />
-            <View>
-              <Text>{item.username}</Text>
-              <Text style={styles.name}>{item.name}</Text>
-            </View>
+          <View>
+            <TouchableOpacity style={styles.userContainer} onPress={() => handleUserPress(navigation, item.id)}>
+              <Image source={{ uri: item.photoUrl }} style={styles.avatar} />
+              <View>
+                <Text>{item.username}</Text>
+                <Text style={styles.name}>{item.name}</Text>
+              </View>
+            </TouchableOpacity>
           </View>
         )}
       />

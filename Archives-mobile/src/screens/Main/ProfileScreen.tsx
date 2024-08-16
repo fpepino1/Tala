@@ -11,7 +11,7 @@ export default function ProfileScreen(){
   
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
-  const defaultPhoto = require('../../assets/images/D9D9D9.png');
+  const defaultPhoto = require('../../../assets/images/D9D9D9.png');
 
 
   useEffect(() => {

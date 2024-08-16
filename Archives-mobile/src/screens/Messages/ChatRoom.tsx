@@ -1,5 +1,5 @@
 import { doc, setDoc, serverTimestamp, onSnapshot, query, where, getDocs, collection, getDoc } from 'firebase/firestore';
-import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig';
+import { FIREBASE_DB, FIREBASE_AUTH } from '../../../FirebaseConfig';
 import { useState, useEffect } from 'react';
 
 export const createChatRoom = async (userId1: string, userId2: string): Promise<string> => {

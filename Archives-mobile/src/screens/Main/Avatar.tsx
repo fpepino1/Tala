@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Image, TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
-import { FIREBASE_DB, FIREBASE_STORAGE, FIREBASE_AUTH } from '../../FirebaseConfig';
+import { FIREBASE_DB, FIREBASE_STORAGE, FIREBASE_AUTH } from '../../../FirebaseConfig';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -114,7 +114,7 @@ export default function Avatar() {
             <TouchableOpacity onPress={pickImage}>
                 <Image
                     resizeMode='contain'
-                    source={image ? { uri: image } : require('../../assets/images/D9D9D9.png')}
+                    source={image ? { uri: image } : require('../../../assets/images/D9D9D9.png')}
                     style={styles.image}
                     accessibilityLabel="Profile image"
                 />

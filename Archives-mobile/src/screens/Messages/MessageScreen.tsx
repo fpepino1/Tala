@@ -4,12 +4,13 @@ import { sendMessage, useMessages } from './MessageFunctions';
 import { StackParamList } from '../../navigation/types';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
-
+import { goToUserProfile } from '../Main/functions';
 const MessageScreen = ({ route }) => {
   const navigation = useNavigation<StackNavigationProp<StackParamList, 'MessageScreen'>>();
   const { userId, chatRoomId, photoUrl, name, username, currentUserId } = route.params;
   const messages = useMessages(chatRoomId);
   const [message, setMessage] = useState('');
+  
 
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return '';
@@ -56,16 +57,27 @@ const MessageScreen = ({ route }) => {
   const reversedMessages = [...messages].reverse();
   const groupedMessages = groupMessagesByDate(reversedMessages);
 
+  
+
   useEffect(() => {
     navigation.setOptions({
       headerTitle: () => (
         <View style={{ marginHorizontal: 'auto', alignItems: 'center' }}>
-          <Text style={styles.name}>{name}</Text>
-          <Text style={styles.username}>{username}</Text>
+          <TouchableOpacity
+            style={{ marginHorizontal: 'auto', alignItems: 'center' }}
+            onPress={() => {
+              // Pass the correct navigation type here
+              goToUserProfile(navigation as unknown as StackNavigationProp<StackParamList, 'UserProfile'>, userId);
+            }}
+          >
+            <Text style={styles.name}>{name}</Text>
+            <Text style={styles.username}>{username}</Text>
+          </TouchableOpacity>
         </View>
       ),
     });
   }, [navigation, photoUrl, name, username]);
+
 
   const handleSend = () => {
     if (message.trim()) {

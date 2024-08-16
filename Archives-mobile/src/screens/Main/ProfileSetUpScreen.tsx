@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { SafeAreaView, TouchableOpacity, Text, StyleSheet, TextInput } from 'react-native';
 import Avatar from './Avatar';
-import { FIREBASE_DB } from '../../FirebaseConfig';
+import { FIREBASE_DB } from '../../../FirebaseConfig';
 import { doc, updateDoc } from 'firebase/firestore';
-import { FIREBASE_AUTH } from '../../FirebaseConfig';
+import { FIREBASE_AUTH } from '../../../FirebaseConfig';
 import { ProfileSetUpScreenProps } from '../../navigation/types';
 
 

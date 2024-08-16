@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { TextInput, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Logo from '../../components/common/logo';
-import { FIREBASE_AUTH } from '../../FirebaseConfig';
+import Logo from '../Main/logo';
+import { FIREBASE_AUTH } from '../../../FirebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, Timestamp, doc, setDoc } from 'firebase/firestore';
 import { RegisterScreenProps } from '../../navigation/types';
