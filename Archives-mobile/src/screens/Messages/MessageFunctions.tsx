@@ -1,8 +1,8 @@
 import { collection, addDoc, setDoc, serverTimestamp, doc, onSnapshot, orderBy, query, writeBatch, getDocs, limit, updateDoc } from 'firebase/firestore';
 import { FIREBASE_DB } from '../../../FirebaseConfig';
 import { useState, useEffect } from 'react';
-import { getFirestore } from 'firebase/firestore';
 
+// Clears the latest flags from messages in the specified chat room
 const clearLatestFlags = async (chatRoomId: string) => {
   try {
     const messagesRef = collection(FIREBASE_DB, `chats/${chatRoomId}/messages`);
@@ -21,6 +21,8 @@ const clearLatestFlags = async (chatRoomId: string) => {
     console.error("Error clearing latest flags:", error);
   }
 };
+
+// Sends a message to the specified chat room and updates the latest flag
 export const sendMessage = async (
   chatRoomId: string,
   currentUserId: string,
@@ -31,7 +33,7 @@ export const sendMessage = async (
   username: string
 ) => {
   try {
-    await clearLatestFlags(chatRoomId);  
+    await clearLatestFlags(chatRoomId);
     const messagesRef = collection(FIREBASE_DB, `chats/${chatRoomId}/messages`);
     await addDoc(messagesRef, {
       message,
@@ -41,7 +43,8 @@ export const sendMessage = async (
       photoUrl,
       name,
       username,
-      isLatest: true 
+      isLatest: true,   
+      seen: false      
     });
   } catch (error) {
     console.error("Error sending message:", error);
@@ -85,11 +88,10 @@ export const useMessages = (chatRoomId: string) => {
   return messages;
 };
 
-
 export const useChatRooms = (currentUserId: string) => {
   const [chatRooms, setChatRooms] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
-  
+
   useEffect(() => {
     if (!currentUserId) return;
 
@@ -122,10 +124,13 @@ export const useChatRooms = (currentUserId: string) => {
 
   return chatRooms;
 };
+
 export const updateMessageSeenStatus = async (chatRoomId: string, messageId: string) => {
-  const messageDocRef = doc(FIREBASE_DB, `chatRooms/${chatRoomId}/messages/${messageId}`);
+  const messageDocRef = doc(FIREBASE_DB, `chats/${chatRoomId}/messages/${messageId}`);
   await updateDoc(messageDocRef, { seen: true });
-};export const getLatestMessage = async (chatRoomId: string) => {
+};
+
+export const getLatestMessage = async (chatRoomId: string) => {
   try {
     const messagesRef = collection(FIREBASE_DB, `chats/${chatRoomId}/messages`);
     const latestMessageQuery = query(messagesRef, orderBy('timestamp', 'desc'), limit(1));

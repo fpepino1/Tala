@@ -1,22 +1,19 @@
-import React, { useState, useEffect } from'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from'react-native';
-import { useChatRooms } from'./MessageFunctions';
-import { useNavigation, NavigationProp } from'@react-navigation/native';
-import { StackParamList } from'../../navigation/types';
-import { FIREBASE_AUTH } from'../../../FirebaseConfig';
-import { doc, getDoc, Timestamp, onSnapshot,updateDoc } from'firebase/firestore';
-import { FIREBASE_DB } from'../../../FirebaseConfig';
-import { getLatestMessage } from'./MessageFunctions';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-
-
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { useChatRooms } from './MessageFunctions';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { StackParamList } from '../../navigation/types';
+import { FIREBASE_AUTH, FIREBASE_DB } from '../../../FirebaseConfig';
+import { doc, onSnapshot, collection, query, orderBy, writeBatch, Timestamp, getDocs, getDoc } from 'firebase/firestore';
+import { Ionicons } from '@expo/vector-icons';
+import { timeAgo } from '../Main/functions';
 interface MessagesProps {
   currentUserId: string;
 }
 
 const Messages: React.FC<MessagesProps> = () => {
   const [userDetails, setUserDetails] = useState<{ [key: string]: any }>({});
-  const [latestMessages, setLatestMessages] = useState<{ [key: string]: { message: string, seen: boolean, senderId: string, timestamp: Timestamp | null } }>({});
+  const [latestMessages, setLatestMessages] = useState<{ [key: string]: { message: string, senderId: string, timestamp: Timestamp | null, seen: boolean, flagged: boolean } }>({});
   const currentUserId = FIREBASE_AUTH.currentUser?.uid;
   const chatRooms = useChatRooms(currentUserId);
   const navigation = useNavigation<NavigationProp<StackParamList>>();
@@ -41,26 +38,51 @@ const Messages: React.FC<MessagesProps> = () => {
   }, [chatRooms, currentUserId]);
 
   useEffect(() => {
-    const fetchLatestMessages = async () => {
-      const messages: { [key: string]: { message: string, seen: boolean, senderId: string, timestamp: Timestamp | null } } = {};
-      for (const chatRoom of chatRooms) {
-        const latestMessage = await getLatestMessage(chatRoom.id);
-        messages[chatRoom.id] = latestMessage
-          ? { message: latestMessage.message, seen: latestMessage.seen, senderId: latestMessage.senderId, timestamp: latestMessage.timestamp }
-          : { message: 'No messages yet', seen: false, senderId: '', timestamp: null };
-      }
-      setLatestMessages(messages);
-    };
+    const unsubscribe = chatRooms.map(chatRoom => {
+      const messagesRef = collection(FIREBASE_DB, `chats/${chatRoom.id}/messages`);
+      const messagesQuery = query(messagesRef, orderBy('timestamp'));
 
-    if (chatRooms.length) {
-      fetchLatestMessages();
-    }
+      return onSnapshot(messagesQuery, snapshot => {
+        const messages: { [key: string]: { message: string, senderId: string, timestamp: Timestamp | null, seen: boolean, flagged: boolean } } = {};
+
+        snapshot.docs.forEach(doc => {
+          const data = doc.data();
+          messages[chatRoom.id] = {
+            message: data.message,
+            senderId: data.senderId,
+            timestamp: data.timestamp as Timestamp || null,
+            seen: data.seen || false,
+            flagged: data.flagged || false,
+          };
+        });
+
+        setLatestMessages(prevMessages => ({
+          ...prevMessages,
+          ...messages
+        }));
+      });
+    });
+
+    return () => {
+      unsubscribe.forEach(unsub => unsub());
+    };
   }, [chatRooms]);
 
   const handleChatPress = async (chatRoom: any) => {
     const otherUserId = chatRoom.users.find((id: string) => id !== currentUserId);
     if (otherUserId && userDetails[otherUserId]) {
       const otherUserData = userDetails[otherUserId];
+      
+      const messagesRef = collection(FIREBASE_DB, `chats/${chatRoom.id}/messages`);
+      const messagesQuery = query(messagesRef, orderBy('timestamp'));
+      const snapshot = await getDocs(messagesQuery);
+
+      const batch = writeBatch(FIREBASE_DB);
+      snapshot.docs.forEach(doc => {
+        batch.update(doc.ref, { seen: true });
+      });
+      await batch.commit();
+
       navigation.navigate('MessageScreen', {
         chatRoomId: chatRoom.id,
         userId: otherUserId,
@@ -69,32 +91,19 @@ const Messages: React.FC<MessagesProps> = () => {
         name: otherUserData.name,
         username: otherUserData.username,
       });
-     
-      // Update the `seen` status of the latest message
-      setLatestMessages((prevMessages) => {
-        const updatedMessages = { ...prevMessages };
-        if (updatedMessages[chatRoom.id]) {
-          updatedMessages[chatRoom.id].seen = true;
-        }
-        return updatedMessages;
-      });
-
-      // Optionally, update `seen` status in Firebase// 
-      const chatRoomDocRef = doc(FIREBASE_DB, `chatRooms/${chatRoom.id}`);// 
-      await updateDoc(chatRoomDocRef, { seen: true });
     } else {
       console.error('User details not available.');
     }
   };
 
   const formatTimestamp = (timestamp: Timestamp | null) => {
-    if (!timestamp) return'';
+    if (!timestamp) return '';
     const date = timestamp.toDate();
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   const formatDateHeader = (timestamp: Timestamp | null) => {
-    if (!timestamp) return'';
+    if (!timestamp) return '';
     const date = timestamp.toDate();
     const today = new Date();
     const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -103,9 +112,9 @@ const Messages: React.FC<MessagesProps> = () => {
     yesterdayDate.setDate(todayDate.getDate() - 1);
 
     if (messageDate.getTime() === todayDate.getTime()) {
-      return'Today';
+      return 'Today';
     } else if (messageDate.getTime() === yesterdayDate.getTime()) {
-      return'Yesterday';
+      return 'Yesterday';
     } else {
       return date.toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
     }
@@ -114,8 +123,8 @@ const Messages: React.FC<MessagesProps> = () => {
   const renderItem = ({ item }: { item: any }) => {
     const otherUserId = item.users.find((id: string) => id !== currentUserId);
     const otherUser = userDetails[otherUserId];
-    const messageDetails = latestMessages[item.id] || { message: 'No messages yet', seen: false, senderId: '', timestamp: null };
-  
+    const messageDetails = latestMessages[item.id] || { message: 'No messages yet', senderId: '', timestamp: null, seen: false, flagged: false };
+
     const senderUsername = messageDetails.senderId === currentUserId
       ? 'You'
       : userDetails[messageDetails.senderId]?.username || 'Unknown';
@@ -125,29 +134,28 @@ const Messages: React.FC<MessagesProps> = () => {
     }
 
     return (
-      <TouchableOpacity style={styles.chatRoomContainer}onPress={() => handleChatPress(item)}>
-        <Image source={{uri:otherUser.photoUrl }} style={styles.profileImage} />
+      <TouchableOpacity style={styles.chatRoomContainer} onPress={() => handleChatPress(item)}>
+        <Image source={{ uri: otherUser.photoUrl }} style={styles.profileImage} />
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <View style={[styles.chatRoomText, { marginRight: '43%'}]}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ fontWeight:'bold' }}>
-              {otherUser.username}
-            </Text>
-            {!messageDetails.seen && (
-          <Ionicons style={{ marginLeft: 5 }} name="ellipse"size={10}color="#DE3B48" />
-          
-        )}
-          </View>
-         <Text style={{ opacity: 0.7 }}>
+          <View style={[styles.chatRoomText, { marginRight: '43%' }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ fontWeight: 'bold' }}>
+                {otherUser.username}
+              </Text>
+              {!messageDetails.seen && (
+              <Ionicons name="ellipse" size={10} color="#DE3B48"  />
+              )}
+            </View>
+            <Text style={{ opacity: 0.7 }}>
               {senderUsername}: {messageDetails.message}
             </Text>
-          
-      
+          </View>
+          <View style={{ flexDirection: 'column', alignItems: 'flex-end', marginLeft: 'auto' }}>
+            <Text style={{ opacity: 0.5 }}>{formatTimestamp(messageDetails.timestamp)}</Text>
+            <Text style={{ opacity: 0.4 }}>{formatDateHeader(messageDetails.timestamp)}</Text>
+          </View>
         </View>
-            <View style={{ flexDirection: 'column', alignItems: 'flex-end', marginLeft: 'auto' }}>
-              <Text style={{ opacity: 0.5 }}>{formatTimestamp(messageDetails.timestamp)}
-              </Text><Text style={{ opacity: 0.4 }}>{formatDateHeader(messageDetails.timestamp)}</Text>
-              </View></View></TouchableOpacity>
+      </TouchableOpacity>
     );
   };
 
@@ -156,7 +164,7 @@ const Messages: React.FC<MessagesProps> = () => {
       {chatRooms.length === 0 ? (
         <Text style={styles.emptyText}>Follow a friend to start messaging</Text>
       ) : (
-        <FlatList data={chatRooms}renderItem={renderItem}keyExtractor={(item) => item.id} />
+        <FlatList data={chatRooms} renderItem={renderItem} keyExtractor={(item) => item.id} />
       )}
     </View>
   );
@@ -182,19 +190,16 @@ const styles = StyleSheet.create({
   chatRoomText: {
     marginVertical: 20,
   },
-  name: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  username: {
-    fontSize: 14,
-    color: '#666',
-  },
   emptyText: {
     textAlign: 'center',
     color: '#666',
     marginTop: 20,
     fontSize: 16,
+  },
+  redMark: {
+    color: 'red',
+    fontSize: 16,
+    marginLeft: 8,
   },
 });
 
