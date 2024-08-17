@@ -1,5 +1,5 @@
-import React from 'react';
-import { TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ProfileScreen from '../screens/Main/ProfileScreen';
@@ -11,8 +11,10 @@ import { TabParamList } from './types';
 import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParamList } from './types';
-import { FIREBASE_AUTH } from '../../FirebaseConfig';
+import { FIREBASE_AUTH, FIREBASE_DB } from '../../FirebaseConfig';
 import Messages from '../screens/Messages/Messages';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+
 const Tab = createBottomTabNavigator<TabParamList>();
 
 type TabNavProp = CompositeNavigationProp<
@@ -21,7 +23,23 @@ type TabNavProp = CompositeNavigationProp<
 >;
 
 export default function TabNav() {
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigation = useNavigation<TabNavProp>();
+
+  useEffect(() => {
+    const userId = FIREBASE_AUTH.currentUser?.uid;
+
+    if (!userId) return;
+
+    const notificationRef = collection(FIREBASE_DB, 'notifications');
+    const q = query(notificationRef, where('userId', '==', userId), where('read', '==', false));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setUnreadCount(snapshot.size);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
     <Tab.Navigator
@@ -41,7 +59,26 @@ export default function TabNav() {
             iconName = 'heart-outline';  
           }
 
-          return <Ionicons name={iconName} size={25} color={color} />;
+          return (
+            <View style={{ position: 'relative' }}>
+              <Ionicons name={iconName} size={25} color={color} />
+              {route.name === 'NotificationScreen' && unreadCount > 0 && (
+                <View style={{ 
+                  position: 'absolute', 
+                  top: -5, 
+                  right: -5, 
+                  backgroundColor: 'red', 
+                  borderRadius: 10, 
+                  width: 20, 
+                  height: 20, 
+                  justifyContent: 'center', 
+                  alignItems: 'center' 
+                }}>
+                  <Text style={{ color: 'white', fontWeight: 'bold' }}>{unreadCount}</Text>
+                </View>
+              )}
+            </View>
+          );
         },
         tabBarActiveTintColor: '#d9d9d9',
         tabBarInactiveTintColor: '#0d0d0d',
@@ -104,7 +141,6 @@ export default function TabNav() {
           title: '',
         }}
       />
-      
     </Tab.Navigator>
   );
 }

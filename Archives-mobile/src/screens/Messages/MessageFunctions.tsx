@@ -1,4 +1,4 @@
-import { collection, addDoc, setDoc, serverTimestamp, doc, onSnapshot, orderBy, query, writeBatch, getDocs } from 'firebase/firestore';
+import { collection, addDoc, setDoc, serverTimestamp, doc, onSnapshot, orderBy, query, writeBatch, getDocs, limit, updateDoc } from 'firebase/firestore';
 import { FIREBASE_DB } from '../../../FirebaseConfig';
 import { useState, useEffect } from 'react';
 import { getFirestore } from 'firebase/firestore';
@@ -121,4 +121,25 @@ export const useChatRooms = (currentUserId: string) => {
   }
 
   return chatRooms;
+};
+export const updateMessageSeenStatus = async (chatRoomId: string, messageId: string) => {
+  const messageDocRef = doc(FIREBASE_DB, `chatRooms/${chatRoomId}/messages/${messageId}`);
+  await updateDoc(messageDocRef, { seen: true });
+};
+export const getLatestMessage = async (chatRoomId: string) => {
+  try {
+    const messagesRef = collection(FIREBASE_DB, `chats/${chatRoomId}/messages`);
+    const latestMessageQuery = query(messagesRef, orderBy('timestamp', 'desc'), limit(1));
+    const querySnapshot = await getDocs(latestMessageQuery);
+    
+    if (!querySnapshot.empty) {
+      const latestMessage = querySnapshot.docs[0].data();
+      return latestMessage;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching latest message:", error);
+    return null;
+  }
 };

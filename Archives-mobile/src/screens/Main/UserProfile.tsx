@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import ProfileStats from './ProfileStats';
 import PostGrid from '../Posts/PostGrid';
 import { useNavigation } from '@react-navigation/native';
-import { arrayUnion, arrayRemove, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { arrayUnion, arrayRemove, doc, updateDoc, getDoc, collection, setDoc, serverTimestamp, addDoc } from 'firebase/firestore';
 import { FIREBASE_DB, FIREBASE_AUTH } from '../../../FirebaseConfig';
 import { UserProfileScreenNavigationProp } from '../../navigation/types';
 import { createChatRoom } from '../Messages/ChatRoom';
@@ -58,8 +58,16 @@ export default function UserProfile({ route }: { route: { params: { username: st
       console.error("Error starting chat:", error);
     }
   };
-  
-
+  const createNotification = async (type: 'like' | 'comment' | 'follow', postOwnerId: string, fromUserId: string, postId: string) => {
+    const notificationRef = collection(FIREBASE_DB, 'notifications');
+    await addDoc(notificationRef, {
+      userId: postOwnerId,
+      type: type,
+      postId: postId,
+      fromUserId: fromUserId,
+      timestamp: new Date().toISOString(),
+    });
+  };
   const handleFollow = async () => {
     try {
       const currentUser = FIREBASE_AUTH.currentUser;
@@ -71,7 +79,10 @@ export default function UserProfile({ route }: { route: { params: { username: st
         await updateDoc(currentUserDocRef, { following: arrayUnion(userId) });
         await updateDoc(targetUserDocRef, { followers: arrayUnion(currentUserId) });
 
+         await createNotification('follow', userId, FIREBASE_AUTH.currentUser?.uid, '');
+
         setIsFollowing(true);
+
       }
     } catch (error) {
       console.error("Error following user:", error);
