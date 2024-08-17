@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Image, StyleSheet } from 'react-native';
 import { GestureHandlerRootView, TouchableOpacity } from 'react-native-gesture-handler';
-import { collection, onSnapshot, query, where, getDoc, doc, DocumentData } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, getDoc, doc, Timestamp, orderBy } from 'firebase/firestore';
 import { FIREBASE_DB, FIREBASE_AUTH } from '../../../FirebaseConfig';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; 
 import { StackParamList } from '../../navigation/types';
+import { timeAgo } from './functions';
+import { Ionicons } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/Ionicons';  
+import AsyncStorage from '@react-native-async-storage/async-storage'; 
 
 interface Notification {
   id: string;
@@ -15,11 +19,14 @@ interface Notification {
   postId?: string;
   postImage?: string;
   description?: string;
+  timestamp: string ;
+  hasBeenViewed: boolean;  
 }
 
 const NotificationsScreen = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastViewed, setLastViewed] = useState<number>(Date.now());  
   const navigation = useNavigation<NavigationProp<StackParamList>>(); 
   const userId = FIREBASE_AUTH.currentUser?.uid;  
 
@@ -27,8 +34,7 @@ const NotificationsScreen = () => {
     if (!userId) return;
 
     const notificationRef = collection(FIREBASE_DB, 'notifications');
-    const q = query(notificationRef, where('userId', '==', userId));
-
+    const q = query(notificationRef, where('userId', '==', userId), orderBy('timestamp', 'desc'));
     const unsubscribe = onSnapshot(q, async (snapshot) => {
       const notificationsData = await Promise.all(snapshot.docs.map(async (doc) => {
         const data = doc.data();
@@ -36,13 +42,13 @@ const NotificationsScreen = () => {
 
         return {
           id: doc.id,
-          fromUserId: data.fromUserId,
+          fromUserId: data.fromUserId, 
           type: data.type, 
           postId: data.postId,
           postImage: postDetails.postImage,
           description: data.description,
-          fromUsername: undefined,
-          fromUserPhotoUrl: undefined,
+          timestamp: data.timestamp,
+          hasBeenViewed: false,
         } as Notification;
       }));
 
@@ -62,12 +68,17 @@ const NotificationsScreen = () => {
 
       const filteredNotifications = notificationDetails.filter(notification => notification.fromUserId !== userId);
 
-      setNotifications(filteredNotifications);
+      const updatedNotifications = filteredNotifications.map(notification => ({
+        ...notification,
+        hasBeenViewed: new Date(notification.timestamp).getTime() <= lastViewed,
+      }));
+
+      setNotifications(updatedNotifications);
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [userId]);
+  }, [userId, lastViewed]);
 
   const getPostDetails = async (postId: string) => {
     try {
@@ -83,6 +94,15 @@ const NotificationsScreen = () => {
     }
   };
 
+  useEffect(() => {
+    const updateLastViewed = async () => {
+      const currentTimestamp = Date.now();
+      setLastViewed(currentTimestamp);
+      await AsyncStorage.setItem('lastViewedNotifications', currentTimestamp.toString());
+    };
+    updateLastViewed();
+  }, []);
+
   if (loading) {
     return <View style={styles.container}></View>;
   }
@@ -92,7 +112,12 @@ const NotificationsScreen = () => {
       console.error('User is not authenticated');
       return;
     }
-  
+
+    const updatedNotifications = notifications.map(notification => 
+      notification.id === item.id ? { ...notification, hasBeenViewed: true } : notification
+    );
+    setNotifications(updatedNotifications);
+
     navigation.navigate('PostDetailScreen', {
       postId: item.postId!,
       userId: userId, 
@@ -119,8 +144,15 @@ const NotificationsScreen = () => {
                      ' started following you.'}
                   </Text>
                   {(item.type === 'like' || item.type === 'comment') && item.postImage ? (
-                    <Image source={{ uri: item.postImage }} style={styles.postImage} />
-                  ) : null}
+                    <Image source={{ uri: item.postImage }} style={styles.postImage} />) : null}
+                </View>
+                <View style={styles.timestampContainer}>
+                  <Text style={{opacity: 0.5}}>
+                    {item.timestamp ? timeAgo(item.timestamp) : 'No date available'}
+                  </Text>
+                  {!item.hasBeenViewed && (
+              <Ionicons name="ellipse" size={10} color="#DE3B48"  />
+              )}
                 </View>
               </View>
             </TouchableOpacity>
@@ -163,6 +195,13 @@ const styles = StyleSheet.create({
     height: 100,
     marginTop: 10,
     borderRadius: 8,
+  },
+  timestampContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  flagIcon: {
+    marginLeft: 10,
   },
 });
 

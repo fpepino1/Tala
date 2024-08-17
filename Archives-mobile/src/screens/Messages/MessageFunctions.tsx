@@ -125,8 +125,7 @@ export const useChatRooms = (currentUserId: string) => {
 export const updateMessageSeenStatus = async (chatRoomId: string, messageId: string) => {
   const messageDocRef = doc(FIREBASE_DB, `chatRooms/${chatRoomId}/messages/${messageId}`);
   await updateDoc(messageDocRef, { seen: true });
-};
-export const getLatestMessage = async (chatRoomId: string) => {
+};export const getLatestMessage = async (chatRoomId: string) => {
   try {
     const messagesRef = collection(FIREBASE_DB, `chats/${chatRoomId}/messages`);
     const latestMessageQuery = query(messagesRef, orderBy('timestamp', 'desc'), limit(1));
