@@ -89,7 +89,7 @@ useEffect(() => {
     fetchCommentUserDetails();
   }
 }, [comments, loading]);
-  const createNotification = async (type: 'like' | 'comment', postOwnerId: string, fromUserId: string, postId: string) => {
+  const createNotification = async (type: 'like' | 'comment', postOwnerId: string, fromUserId: string, postId: string, commentText: string) => {
     const notificationRef = collection(FIREBASE_DB, 'notifications');
     await addDoc(notificationRef, {
       userId: postOwnerId,
@@ -97,6 +97,7 @@ useEffect(() => {
       postId: postId,
       fromUserId: fromUserId,
       timestamp: new Date().toISOString(),
+      commentText: commentText,
     });
   };
   const handleGoToLikesScreen = () => {
@@ -113,9 +114,9 @@ useEffect(() => {
       const commentId = new Date().getTime().toString(); 
       const comment = { id: commentId, userId: FIREBASE_AUTH.currentUser?.uid || '', text: newComment.trim() };
       setComments([...comments, comment]);
-      setNewComment('');
       await updateDoc(postRef, { comments: arrayUnion(comment) });
-      await createNotification('comment', uid, FIREBASE_AUTH.currentUser?.uid || '', postId);
+      await createNotification('comment', uid, FIREBASE_AUTH.currentUser?.uid || '', postId, newComment.trim());
+      setNewComment('');
 
     }
   };
@@ -232,7 +233,7 @@ useEffect(() => {
           await deleteNotification(doc.id);
         });
       } else {
-        await createNotification('like', uid, userId, postId);
+        await createNotification('like', uid, userId, postId, '');
       }
     }
   };

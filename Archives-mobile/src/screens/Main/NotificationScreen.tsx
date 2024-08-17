@@ -140,7 +140,7 @@ const NotificationsScreen = () => {
                   <Text style={styles.notificationText}>
                     <Text style={styles.username}>{item.fromUsername}</Text>
                     {item.type === 'like' ? ' liked your post.' :
-                     item.type === 'comment' ? ' commented on your post.' :
+                     item.type === 'comment' ? ` commented on your post.` :
                      ' started following you.'}
                   </Text>
                   {(item.type === 'like' || item.type === 'comment') && item.postImage ? (

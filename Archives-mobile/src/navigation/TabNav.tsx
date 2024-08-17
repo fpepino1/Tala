@@ -12,9 +12,8 @@ import { useNavigation, CompositeNavigationProp } from '@react-navigation/native
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParamList } from './types';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../../FirebaseConfig';
-import Messages from '../screens/Messages/Messages';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
-
+import Messages from '../screens/Messages/Messages';
 const Tab = createBottomTabNavigator<TabParamList>();
 
 type TabNavProp = CompositeNavigationProp<
@@ -23,7 +22,8 @@ type TabNavProp = CompositeNavigationProp<
 >;
 
 export default function TabNav() {
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const navigation = useNavigation<TabNavProp>();
 
   useEffect(() => {
@@ -31,14 +31,26 @@ export default function TabNav() {
 
     if (!userId) return;
 
+    // Fetch unread notifications count
     const notificationRef = collection(FIREBASE_DB, 'notifications');
-    const q = query(notificationRef, where('userId', '==', userId), where('read', '==', false));
+    const notificationQuery = query(notificationRef, where('userId', '==', userId), where('read', '==', false));
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setUnreadCount(snapshot.size);
+    const unsubscribeNotifications = onSnapshot(notificationQuery, (snapshot) => {
+      setUnreadNotifications(snapshot.size);
     });
 
-    return () => unsubscribe();
+    // Fetch unread messages count
+    const messagesRef = collection(FIREBASE_DB, 'users', userId, 'chats');
+    const messagesQuery = query(messagesRef, where('isLatest', '==', true), where('seen', '==', false));
+
+    const unsubscribeMessages = onSnapshot(messagesQuery, (snapshot) => {
+      setUnreadMessages(snapshot.size);
+    });
+
+    return () => {
+      unsubscribeNotifications();
+      unsubscribeMessages();
+    };
   }, []);
 
   return (
@@ -46,6 +58,7 @@ export default function TabNav() {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let iconName;
+          let badgeCount = 0;
 
           if (route.name === 'Feed') {
             iconName = 'home-outline';
@@ -57,12 +70,14 @@ export default function TabNav() {
             iconName = 'search-outline';
           } else if (route.name === 'NotificationScreen') {
             iconName = 'heart-outline';  
-          }
+            badgeCount = unreadNotifications;
+          } 
+         
 
           return (
             <View style={{ position: 'relative' }}>
               <Ionicons name={iconName} size={25} color={color} />
-              {route.name === 'NotificationScreen' && unreadCount > 0 && (
+              {badgeCount > 0 && (
                 <View style={{ 
                   position: 'absolute', 
                   top: -5, 
@@ -74,7 +89,7 @@ export default function TabNav() {
                   justifyContent: 'center', 
                   alignItems: 'center' 
                 }}>
-                  <Text style={{ color: 'white', fontWeight: 'bold' }}>{unreadCount}</Text>
+                  <Text style={{ color: 'white', fontWeight: 'bold' }}>{badgeCount}</Text>
                 </View>
               )}
             </View>

@@ -2,7 +2,6 @@ import { collection, addDoc, setDoc, serverTimestamp, doc, onSnapshot, orderBy, 
 import { FIREBASE_DB } from '../../../FirebaseConfig';
 import { useState, useEffect } from 'react';
 
-// Clears the latest flags from messages in the specified chat room
 const clearLatestFlags = async (chatRoomId: string) => {
   try {
     const messagesRef = collection(FIREBASE_DB, `chats/${chatRoomId}/messages`);
@@ -22,7 +21,6 @@ const clearLatestFlags = async (chatRoomId: string) => {
   }
 };
 
-// Sends a message to the specified chat room and updates the latest flag
 export const sendMessage = async (
   chatRoomId: string,
   currentUserId: string,
