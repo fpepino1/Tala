@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Image, TouchableOpacity, Text, StyleSheet, View } from 'react-native';
+import { Image, TouchableOpacity, StyleSheet, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { FIREBASE_DB, FIREBASE_STORAGE, FIREBASE_AUTH } from '../../../FirebaseConfig';
@@ -7,7 +7,11 @@ import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
-export default function Avatar() {
+interface AvatarProps {
+  initialPhotoUrl?: string; // Optional prop for initial photo URL
+}
+
+export default function Avatar({ initialPhotoUrl }: AvatarProps) {
     const [image, setImage] = useState<string | null>(null);
     const [user, setUser] = useState(FIREBASE_AUTH.currentUser);
     const [progress, setProgress] = useState(0); 
@@ -33,7 +37,6 @@ export default function Avatar() {
         if (!result.canceled && result.assets && result.assets.length > 0) {
             const uri = result.assets[0].uri;
             setImage(uri);
-            console.log(uri);
             const downloadURL = await uploadImage(uri, "image");
             if (downloadURL && user) {
                 await updateUserProfileImage(downloadURL);
@@ -69,7 +72,6 @@ export default function Avatar() {
                     "state_changed",
                     (snapshot) => {
                         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        console.log(`Upload is ${progress}% done`);
                         setProgress(Math.round(progress)); 
                     },
                     (error: any) => {
@@ -79,7 +81,6 @@ export default function Avatar() {
                     async () => {
                         try {
                             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                            console.log("File available at", downloadURL);
                             resolve(downloadURL);
                         } catch (error: any) {
                             console.error("Error getting download URL: ", error);
@@ -103,7 +104,6 @@ export default function Avatar() {
         const userRef = doc(FIREBASE_DB, "users", user.uid);
         try {
             await setDoc(userRef, { photoUrl: url }, { merge: true });
-            console.log("Profile image updated successfully");
         } catch (error) {
             console.error("Error updating profile image: ", error);
         }
@@ -114,14 +114,14 @@ export default function Avatar() {
             <TouchableOpacity onPress={pickImage}>
                 <Image
                     resizeMode='contain'
-                    source={image ? { uri: image } : require('../../../assets/images/D9D9D9.png')}
-                    style={styles.image}
+                    source={image ? { uri: image } : { uri: initialPhotoUrl || require('../../../assets/images/D9D9D9.png') }}
+                    style={[styles.image, !image && initialPhotoUrl ? { opacity: 0.7 } : {}]} // Adjust opacity based on image state
                     accessibilityLabel="Profile image"
                 />
             </TouchableOpacity>
         </View>
     );
-} 
+}
 
 const styles = StyleSheet.create({
     image: {

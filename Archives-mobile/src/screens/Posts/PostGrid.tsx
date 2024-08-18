@@ -78,6 +78,7 @@ useEffect(() => {
   );
 
   return (
+    
     <View style={styles.container}>
       {loading ? (
         <View style={styles.loadingContainer}>

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Image, View, Text, TouchableOpacity, TextInput, FlatList, Modal, TouchableWithoutFeedback, Alert } from 'react-native';
+import { StyleSheet, Image, View, Text, TouchableOpacity, TextInput, Keyboard, FlatList, Modal, TouchableWithoutFeedback, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { Avatar, Card, Paragraph } from 'react-native-paper';
 import { fetchUserData } from '../Main/UserData';
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, getDocs, collection, deleteDoc, query, addDoc, where } from 'firebase/firestore';
@@ -8,7 +8,7 @@ import { FIREBASE_AUTH, FIREBASE_DB } from '../../../FirebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { UserProfileScreenNavigationProp } from '../../navigation/types';
-
+import { PostModal } from './PostModal';
 interface PostData {
   postImage: string;
   description?: string;
@@ -65,7 +65,17 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
   
 
   const [commentUserDetails, setCommentUserDetails] = useState<{ [userId: string]: { username: string, avatar: string } }>({});
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 useEffect(() => {
   const fetchCommentUserDetails = async () => {
     const userDetails: { [userId: string]: { username: string, avatar: string } } = {};
@@ -292,7 +302,11 @@ useEffect(() => {
   else if (!user || !post) {
     return <Paragraph>No data found.</Paragraph>;
   }
+  const [postModalVisible, setPostModalVisible] = React.useState(false);
+
+  const closeModal = () => setPostModalVisible(false);
   return (
+    
     <Card 
     style={[styles.card]}>
          <TouchableOpacity onPress={goToUserProfile}>
@@ -357,57 +371,70 @@ useEffect(() => {
         </View>
     
         <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={closeCommentModal}
-        >
-          <TouchableWithoutFeedback onPress={closeCommentModal}>
-            <View style={styles.modalOverlay} />
-          </TouchableWithoutFeedback>
-          <View style={styles.modalContent}>
-          <Text style={[styles.modalTitle,{marginBottom: '10%'}]}>Comments</Text>
-          <FlatList
-  data={comments}
-  renderItem={({ item }) => (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: '2%' }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Avatar.Image size={24} source={{ uri: commentUserDetails[item.userId]?.avatar }} />
-        <Text style={{ fontSize: 14, marginLeft: 8 }}>
-          <TouchableOpacity onPress={()=>{
-            closeCommentModal();
-            goToUserProfile();}}>
-          <Text style={{ fontWeight: 'bold' }}>
-            {commentUserDetails[item.userId]?.username}
-          </Text>
-          </TouchableOpacity>
-          {` ${item.text}`}
-        </Text>
-      </View>
-      {FIREBASE_AUTH.currentUser?.uid === item.userId && (
-        <TouchableOpacity onPress={() => handleDeleteComment(item.id)}>
-          <Ionicons name="trash-outline" size={20} color="#d9534f" />
-        </TouchableOpacity>
-      )}
-    </View>
-  )}
-  keyExtractor={(item, index) => index.toString()}
-/>
-            <View style={[styles.commentInputContainer,{ marginBottom: '10%'}]}>
-            <TextInput
-              style={[styles.commentInput, {width: comments.length > 0 ? '95%' : '100%'}]}
-              placeholder="Add a comment..."
-              value={newComment}
-              onChangeText={setNewComment}
-              onSubmitEditing={handleComment}
-            />
+  animationType="slide"
+  transparent={true}
+  visible={modalVisible}
+  onRequestClose={closeCommentModal}
+>
+  <TouchableWithoutFeedback onPress={
+    ()=>{
+      Keyboard.dismiss();
+    closeCommentModal();}}>
+    <View style={styles.modalOverlay} />
+  </TouchableWithoutFeedback>
+  <KeyboardAvoidingView
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    style={styles.modalContent}
+    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0} 
+  >
+    
+      <View style={{ flex: 1 }}>
+        <Text style={styles.modalTitle}>Comments</Text>
+        <FlatList
+          data={comments}
+          renderItem={({ item }) => (
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: '2%' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Avatar.Image size={24} source={{ uri: commentUserDetails[item.userId]?.avatar }} />
+                <Text style={{ fontSize: 14, marginLeft: 8 }}>
+                  <TouchableOpacity onPress={() => {
+                    closeCommentModal();
+                    goToUserProfile();
+                  }}>
+                    <Text style={{ fontWeight: 'bold' }}>
+                      {commentUserDetails[item.userId]?.username}
+                    </Text>
+                  </TouchableOpacity>
+                  {` ${item.text}`}
+                </Text>
+              </View>
+              {FIREBASE_AUTH.currentUser?.uid === item.userId && (
+                <TouchableOpacity onPress={() => handleDeleteComment(item.id)}>
+                  <Ionicons name="trash-outline" size={20} color="#d9534f" />
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+          keyExtractor={(item, index) => index.toString()}
+        />
+        <View style={styles.commentInputContainer}>
+          <TextInput
+            style={[styles.commentInput, {marginBottom: keyboardVisible ? '3%' : '8%'}]}
+            placeholder="Add a comment..."
+            value={newComment}
+            onChangeText={setNewComment}
+            onSubmitEditing={handleComment}
+          />
           {newComment.trim().length > 0 && (
             <TouchableOpacity onPress={handleComment} style={styles.submitButton}>
-        <Ionicons name="arrow-forward" size={20} color="#0D0D0D" />
-            </TouchableOpacity>)}
-            </View>
-          </View>
-        </Modal>
+              <Ionicons name="arrow-forward" size={20} color="#0D0D0D" />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+  </KeyboardAvoidingView>
+</Modal>
+
       </Card.Content>
     </Card>
   );
@@ -449,6 +476,7 @@ const styles = StyleSheet.create({
   },
   commentInput: {
     padding: 8,
+    width: '90%',
     marginTop: '1%',
     borderWidth: 1,
     borderRadius: 18,
