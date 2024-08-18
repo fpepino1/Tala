@@ -7,7 +7,7 @@ import { FIREBASE_DB } from '../../../FirebaseConfig';
 import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { LoginScreenProps } from '../../navigation/types';
 import { doc, getDoc } from 'firebase/firestore';
-
+import { updateUserActivity } from '../Main/functions';
 export default function LoginScreen ({ navigation, route }: LoginScreenProps) {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -29,7 +29,8 @@ export default function LoginScreen ({ navigation, route }: LoginScreenProps) {
         const userData = docSnap.data();
         console.log('User data:', userData);
     
-  
+        await updateUserActivity(userId, { status: 'active' });
+
         navigation.navigate('TabNav', {
           screen: 'ProfileScreen',
           params: {
@@ -61,7 +62,9 @@ export default function LoginScreen ({ navigation, route }: LoginScreenProps) {
       }
     });
   };
+  
 
+  
   return (
     <SafeAreaView style={styles.container}>
       <Logo />

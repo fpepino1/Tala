@@ -6,7 +6,7 @@ import { StackParamList } from '../../navigation/types';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../../../FirebaseConfig';
 import { doc, onSnapshot, collection, query, orderBy, writeBatch, Timestamp, getDocs, getDoc } from 'firebase/firestore';
 import { Ionicons } from '@expo/vector-icons';
-import { timeAgo } from '../Main/functions';
+import ActiveUsersList from '../Main/ActiveUsersList';
 interface MessagesProps {
   currentUserId: string;
 }
@@ -161,10 +161,13 @@ const Messages: React.FC<MessagesProps> = () => {
 
   return (
     <View style={styles.container}>
+  <ActiveUsersList currentUserId={FIREBASE_AUTH.currentUser?.uid} />
       {chatRooms.length === 0 ? (
         <Text style={styles.emptyText}>Follow a friend to start messaging</Text>
       ) : (
+       <View>
         <FlatList data={chatRooms} renderItem={renderItem} keyExtractor={(item) => item.id} />
+        </View>
       )}
     </View>
   );

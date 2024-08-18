@@ -5,6 +5,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParamList } from '../../navigation/types';
 import { useNavigation } from '@react-navigation/native';
 import Icon from "react-native-vector-icons/Ionicons";
+import { updateUserActivity } from '../Main/functions';
 import sendEmail  from 'react-native-email';
 
 export default function MenuScreen() {
@@ -24,9 +25,17 @@ export default function MenuScreen() {
     };
     async function handleLogout() {
         try {
-            await auth.signOut();
-            console.log('User signed out!');
-            navigation.replace('LoginScreen');
+
+            try {
+                
+                await updateUserActivity(FIREBASE_AUTH.currentUser?.uid, { status: 'inactive' });
+                await auth.signOut();
+
+              } catch (error) {
+                console.error('Failed to update user activity:', error);
+              }
+            
+              navigation.replace('LoginScreen');
         } catch (error) {
             console.error('Error signing out: ', error);
         }

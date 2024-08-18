@@ -4,6 +4,7 @@ import { FIREBASE_DB, FIREBASE_AUTH } from '../../../FirebaseConfig';
 import { collection, getDocs, getDoc, query,doc, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import PostCard from '../Posts/PostCard';
+import ActiveUsersList from './ActiveUsersList';
 export default function Feed() {
   const [userId, setUserId] = useState<string | null>(null);
   const [posts, setPosts] = useState<any[]>([]);
@@ -65,7 +66,11 @@ export default function Feed() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: '#F8F3FA' }]}>
+     <View style={{ flex: 1 }}>
+</View>
+
       {posts.length > 0 ? (
+        
         posts.map((post) => (
           <PostCard key={post.id} postData={post} uid={post.userId} postId={post.id} />
         ))

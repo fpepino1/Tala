@@ -66,7 +66,6 @@ const MessageScreen = ({ route }) => {
           <TouchableOpacity
             style={{ marginHorizontal: 'auto', alignItems: 'center' }}
             onPress={() => {
-              // Pass the correct navigation type here
               goToUserProfile(navigation as unknown as StackNavigationProp<StackParamList, 'UserProfile'>, userId);
             }}
           >
@@ -171,9 +170,11 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   messageSent: {
+    marginRight:10,
     justifyContent: 'flex-end',
   },
   messageReceived: {
+    marginLeft:10,
     justifyContent: 'flex-start',
   },
   messageBubble: {

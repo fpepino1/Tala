@@ -344,13 +344,13 @@ useEffect(() => {
       
           <View>
           {comments.length > 0 && (
-          <View>
-            <Text style={styles.commentText}>
+          <View style={{flexDirection:'row' }}>
+            <Text style={[styles.commentText]}>
+              <TouchableOpacity  onPress={goToUserProfile}>
               <Text style={styles.commentUser}>
-
               {commentUserDetails[comments[comments.length - 1].userId]?.username}
               </Text> 
-              {comments[comments.length - 1].text}
+              </TouchableOpacity> <Text>{comments[comments.length - 1].text}</Text>
             </Text>
           </View>
         )}
@@ -374,9 +374,13 @@ useEffect(() => {
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Avatar.Image size={24} source={{ uri: commentUserDetails[item.userId]?.avatar }} />
         <Text style={{ fontSize: 14, marginLeft: 8 }}>
+          <TouchableOpacity onPress={()=>{
+            closeCommentModal();
+            goToUserProfile();}}>
           <Text style={{ fontWeight: 'bold' }}>
             {commentUserDetails[item.userId]?.username}
           </Text>
+          </TouchableOpacity>
           {` ${item.text}`}
         </Text>
       </View>
@@ -391,8 +395,8 @@ useEffect(() => {
 />
             <View style={[styles.commentInputContainer,{ marginBottom: '10%'}]}>
             <TextInput
-                style={[styles.commentInput, {width: comments.length > 0 ? '95%' : '100%'}]}
-                placeholder="Add a comment..."
+              style={[styles.commentInput, {width: comments.length > 0 ? '95%' : '100%'}]}
+              placeholder="Add a comment..."
               value={newComment}
               onChangeText={setNewComment}
               onSubmitEditing={handleComment}
@@ -454,9 +458,13 @@ const styles = StyleSheet.create({
   
   commentText: {
     fontSize: 14,
+    alignContent: 'center',
+    alignItems: 'center',
   },
   commentUser: {
     fontWeight: 'bold',
+    alignContent: 'center',
+    alignItems: 'center',
   },
   modalOverlay: {
     flex: 1,
