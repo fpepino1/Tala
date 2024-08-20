@@ -185,7 +185,7 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
             });
 
             
-            const storageRef = ref(FIREBASE_STORAGE, `users/${FIREBASE_AUTH.currentUser?.uid}/Posts/${postId}`);
+            const storageRef = ref(FIREBASE_STORAGE, `users/${FIREBASE_AUTH.currentUser?.uid}/Posts/${postId}.jpg`);
             await deleteObject(storageRef);           
             await deleteDoc(postRef);
 
