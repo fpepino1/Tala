@@ -5,7 +5,7 @@ import * as FileSystem from 'expo-file-system';
 import { onAuthStateChanged } from 'firebase/auth';
 import { FIREBASE_DB, FIREBASE_STORAGE, FIREBASE_AUTH } from '../../../FirebaseConfig';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { doc, addDoc, collection } from 'firebase/firestore';
+import { doc, addDoc, collection, updateDoc } from 'firebase/firestore';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -14,7 +14,7 @@ const Post = ({ navigation }) => {
     const [image, setImage] = useState<string | null>(null);
     const [progress, setProgress] = useState(0);
     const [description, setDescription] = useState("");
-    const [loading, setLoading] = useState(false); 
+    const [loading, setLoading] = useState(false);
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -32,7 +32,7 @@ const Post = ({ navigation }) => {
         }
     };
 
-    const uploadImage = async (uri: string): Promise<string | null> => {
+    const uploadImage = async (uri: string, postId: string): Promise<string | null> => {
         try {
             const fileInfo = await FileSystem.getInfoAsync(uri);
             if (!fileInfo.exists) {
@@ -52,7 +52,8 @@ const Post = ({ navigation }) => {
                 xhr.send(null);
             });
 
-            const storageRef = ref(FIREBASE_STORAGE, `users/${user.uid}/Posts/Image_${new Date().getTime()}.jpg`);
+            // Use postId in the storage path
+            const storageRef = ref(FIREBASE_STORAGE, `users/${user.uid}/Posts/${postId}.jpg`);
             const uploadTask = uploadBytesResumable(storageRef, blob);
 
             return new Promise((resolve, reject) => {
@@ -84,31 +85,41 @@ const Post = ({ navigation }) => {
             return null;
         }
     };
-
     const postImage = async () => {
         if (!image) {
             return;
         }
-
+    
         setLoading(true);
-
-        const downloadURL = await uploadImage(image);
-        if (downloadURL && user) {
-            try {
-                const postsRef = collection(FIREBASE_DB, "users", user.uid, "posts");
-                await addDoc(postsRef, {
+    
+        try {
+            // Add post document to Firestore first to get the postId
+            const postsRef = collection(FIREBASE_DB, "users", user.uid, "posts");
+            const postDocRef = await addDoc(postsRef, {
+                postImage: "",  // Placeholder for the image URL
+                description: description || "",
+                timestamp: new Date(),
+            });
+    
+            const postId = postDocRef.id; // Get the postId
+    
+            // Upload the image with the postId
+            const downloadURL = await uploadImage(image, postId);
+    
+            if (downloadURL) {
+                // Update the post document with the image URL
+                await updateDoc(doc(FIREBASE_DB, "users", user.uid, "posts", postId), {
                     postImage: downloadURL,
-                    description: description || "",
-                    timestamp: new Date(),
                 });
-                setImage(null);
-                setDescription("");
-                navigation.navigate('ProfileScreen');
-            } catch (error) {
-                console.error("Error: ", error);
-            } finally {
-                setLoading(false); 
             }
+    
+            setImage(null);
+            setDescription("");
+            navigation.navigate('ProfileScreen');
+        } catch (error) {
+            console.error("Error: ", error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -153,6 +164,7 @@ const Post = ({ navigation }) => {
                     </View>
                 </>
             )}
+            {loading }
         </SafeAreaView>
     );
 };
@@ -163,7 +175,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#F8F3FA',
-
     },
     image: {
         width: 330,
@@ -182,8 +193,6 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 16,
         height: 51,
-        justifyContent: 'center',
-        alignItems: 'center',
         width: '100%',
     },
     button: {

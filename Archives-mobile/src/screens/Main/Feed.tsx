@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { ScrollView, StyleSheet, View, Text, ActivityIndicator } from 'react-native';
 import { FIREBASE_DB, FIREBASE_AUTH } from '../../../FirebaseConfig';
-import { collection, getDocs, getDoc, query,doc, orderBy } from 'firebase/firestore';
+import { collection, getDocs, getDoc, query,doc, orderBy, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import PostCard from '../Posts/PostCard';
 import ActiveUsersList from './ActiveUsersList';
@@ -55,7 +55,6 @@ export default function Feed() {
         setUserId(user.uid);
         fetchPosts(user.uid);
       } else {
-        console.error("User is not authenticated.");
         setLoading(false);
       }
     });

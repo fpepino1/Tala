@@ -31,7 +31,7 @@ export default function LoginScreen ({ navigation, route }: LoginScreenProps) {
     
         await updateUserActivity(userId, { status: 'active' });
 
-        navigation.navigate('TabNav', {
+        navigation.replace('TabNav', {
           screen: 'ProfileScreen',
           params: {
             name: userData.name,

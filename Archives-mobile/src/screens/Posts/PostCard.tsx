@@ -3,12 +3,12 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Image, View, Text, TouchableOpacity, TextInput, Keyboard, FlatList, Modal, TouchableWithoutFeedback, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { Avatar, Card, Paragraph } from 'react-native-paper';
 import { fetchUserData } from '../Main/UserData';
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, getDocs, collection, deleteDoc, query, addDoc, where } from 'firebase/firestore';
-import { FIREBASE_AUTH, FIREBASE_DB } from '../../../FirebaseConfig';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, getDocs, collection, deleteDoc, query, addDoc, where, onSnapshot } from 'firebase/firestore';
+import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from '../../../FirebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { UserProfileScreenNavigationProp } from '../../navigation/types';
-import { PostModal } from './PostModal';
+import {ref, deleteObject} from 'firebase/storage';
 interface PostData {
   postImage: string;
   description?: string;
@@ -38,28 +38,30 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
       try {
         const userData = await fetchUserData(uid);
         setUser(userData);
-  
+
         const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
-        const postSnap = await getDoc(postRef);
-  
-        if (postSnap.exists()) {
-          const postData = postSnap.data();
-          setPost(postData);
-  
-          // Fetch comments
-          const comments = postData.comments || [];
-          setComments(comments);
-  
-          const userHasLiked = postData.likes?.includes(FIREBASE_AUTH.currentUser?.uid || '');
-          setLiked(userHasLiked || false);
-        }
+
+        const unsubscribe = onSnapshot(postRef, (postSnap) => {
+          if (postSnap.exists()) {
+            const postData = postSnap.data();
+            setPost(postData);
+
+            const comments = postData.comments || [];
+            setComments(comments);
+
+            const userHasLiked = postData.likes?.includes(FIREBASE_AUTH.currentUser?.uid || '');
+            setLiked(userHasLiked || false);
+          }
+        });
+
+        return () => unsubscribe();
       } catch (error) {
         console.error("Error fetching post data:", error);
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchData();
   }, [uid, postId]);
   
@@ -76,29 +78,29 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
       keyboardDidHideListener.remove();
     };
   }, []);
-useEffect(() => {
-  const fetchCommentUserDetails = async () => {
-    const userDetails: { [userId: string]: { username: string, avatar: string } } = {};
-    const uniqueUserIds = Array.from(new Set(comments.map(comment => comment.userId)));
 
-    for (const userId of uniqueUserIds) {
-      const userRef = doc(FIREBASE_DB, 'users', userId);
-      const userSnap = await getDoc(userRef);
-      if (userSnap.exists()) {
-        userDetails[userId] = {
-          username: userSnap.data()?.username || 'Unknown User',
-          avatar: userSnap.data()?.photoUrl || '',
-        };
+  useEffect(() => {
+    const fetchCommentUserDetails = async () => {
+      const userDetails: { [userId: string]: { username: string, avatar: string } } = {};
+      const uniqueUserIds = Array.from(new Set(comments.map(comment => comment.userId)));
+  
+      for (const userId of uniqueUserIds) {
+        const userRef = doc(FIREBASE_DB, 'users', userId);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          userDetails[userId] = {
+            username: userSnap.data()?.username || 'Unknown User',
+            avatar: userSnap.data()?.photoUrl || '',
+          };
+        }
       }
-    }
-
-    setCommentUserDetails(userDetails);
-  };
-
-  if (!loading) {
+  
+      setCommentUserDetails(userDetails);
+    };
+  
     fetchCommentUserDetails();
-  }
-}, [comments, loading]);
+  }, [comments]);
+  
   const createNotification = async (type: 'like' | 'comment', postOwnerId: string, fromUserId: string, postId: string, commentText: string) => {
     const notificationRef = collection(FIREBASE_DB, 'notifications');
     await addDoc(notificationRef, {
@@ -127,9 +129,9 @@ useEffect(() => {
       await updateDoc(postRef, { comments: arrayUnion(comment) });
       await createNotification('comment', uid, FIREBASE_AUTH.currentUser?.uid || '', postId, newComment.trim());
       setNewComment('');
-
     }
   };
+  
   
   
   const toggleCommentInput = () => {
@@ -151,7 +153,8 @@ useEffect(() => {
       const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
       const commentsRef = collection(postRef, 'comments');
       const likesRef = collection(postRef, 'likes');
-  
+      const notificationsRef = collection(FIREBASE_DB, 'notifications');
+
       Alert.alert(
         'Delete Post',
         'Are you sure you want to delete this post? This will also delete all associated comments and likes.',
@@ -173,9 +176,20 @@ useEffect(() => {
               likesSnapshot.forEach(async (likeDoc) => {
                 await deleteDoc(likeDoc.ref);
               });
-  
-              await deleteDoc(postRef);
-              console.log('Post and associated data deleted');
+              
+            const notificationsSnapshot = await getDocs(
+              query(notificationsRef, where('postId', '==', postId))
+            );
+            notificationsSnapshot.forEach(async (notificationDoc) => {
+              await deleteDoc(notificationDoc.ref);
+            });
+
+            
+            const storageRef = ref(FIREBASE_STORAGE, `users/${FIREBASE_AUTH.currentUser?.uid}/Posts/${postId}`);
+            await deleteObject(storageRef);           
+            await deleteDoc(postRef);
+
+            console.log('Post and associated data deleted');
             },
           },
         ],
@@ -215,7 +229,6 @@ useEffect(() => {
       console.error('Error deleting notification:', error);
     }
   };
-  
   const handleLike = async () => {
     if (post) {
       const postRef = doc(FIREBASE_DB, 'users', uid, 'posts', postId);
@@ -302,9 +315,6 @@ useEffect(() => {
   else if (!user || !post) {
     return <Paragraph>No data found.</Paragraph>;
   }
-  const [postModalVisible, setPostModalVisible] = React.useState(false);
-
-  const closeModal = () => setPostModalVisible(false);
   return (
     
     <Card 
@@ -319,10 +329,10 @@ useEffect(() => {
       <TouchableOpacity onPress={handleDeletePost} 
       style={{paddingRight: '3%'}}>
         <Ionicons name="ellipsis-horizontal" size={20} color="#0d0d0d" />
-      </TouchableOpacity>
-    )
-  }
-/>
+            </TouchableOpacity>
+          )
+        }
+      />
 
       </TouchableOpacity>
       <View style={styles.imageContainer}>
@@ -371,22 +381,22 @@ useEffect(() => {
         </View>
     
         <Modal
-  animationType="slide"
-  transparent={true}
-  visible={modalVisible}
-  onRequestClose={closeCommentModal}
->
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={closeCommentModal}
+        >
   <TouchableWithoutFeedback onPress={
     ()=>{
       Keyboard.dismiss();
     closeCommentModal();}}>
     <View style={styles.modalOverlay} />
-  </TouchableWithoutFeedback>
-  <KeyboardAvoidingView
-    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    style={styles.modalContent}
-    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0} 
-  >
+        </TouchableWithoutFeedback>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalContent}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0} 
+        >
     
       <View style={{ flex: 1 }}>
         <Text style={styles.modalTitle}>Comments</Text>
@@ -432,8 +442,8 @@ useEffect(() => {
           )}
         </View>
       </View>
-  </KeyboardAvoidingView>
-</Modal>
+        </KeyboardAvoidingView>
+      </Modal>
 
       </Card.Content>
     </Card>
