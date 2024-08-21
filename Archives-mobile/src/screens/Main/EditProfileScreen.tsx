@@ -32,7 +32,7 @@ export default function EditProfileScreen() {
         setName(userData.name || '');
         setUsername(userData.username || '');
         setBio(userData.bio || '');
-        setPhotoUrl(userData.photoUrl || '');
+        setPhotoUrl(userData.photoUrl );
       }
     };
     fetchUserData();

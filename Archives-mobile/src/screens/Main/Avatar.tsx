@@ -8,7 +8,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 interface AvatarProps {
-  initialPhotoUrl?: string; // Optional prop for initial photo URL
+  initialPhotoUrl?: string; 
 }
 
 export default function Avatar({ initialPhotoUrl }: AvatarProps) {
@@ -114,8 +114,11 @@ export default function Avatar({ initialPhotoUrl }: AvatarProps) {
             <TouchableOpacity onPress={pickImage}>
                 <Image
                     resizeMode='contain'
-                    source={image ? { uri: image } : { uri: initialPhotoUrl || require('../../../assets/images/D9D9D9.png') }}
-                    style={[styles.image, !image && initialPhotoUrl ? { opacity: 0.7 } : {}]} // Adjust opacity based on image state
+                    source={
+                        image ? { uri: image } : 
+                        initialPhotoUrl ? { uri: initialPhotoUrl } : 
+                        require('../../../assets/images/D9D9D9.png')
+                      }                    style={[styles.image, !image && initialPhotoUrl ? { opacity: 0.7 } : {}]} // Adjust opacity based on image state
                     accessibilityLabel="Profile image"
                 />
             </TouchableOpacity>

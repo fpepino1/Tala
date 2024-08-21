@@ -90,7 +90,7 @@ const PostCard = ({ postData, uid, postId }: PostCardProps) => {
         if (userSnap.exists()) {
           userDetails[userId] = {
             username: userSnap.data()?.username || 'Unknown User',
-            avatar: userSnap.data()?.photoUrl || '',
+            avatar: userSnap.data()?.photoUrl ,
           };
         }
       }

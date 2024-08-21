@@ -4,7 +4,7 @@
     "slug": "Archives-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/4.png",
+    "icon": "./assets/images/tala.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/images/4.png",
@@ -16,7 +16,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/8.png",
+        "foregroundImage": "./assets/images/tala.png",
         "backgroundColor": "#0d0d0d"
       }
     },

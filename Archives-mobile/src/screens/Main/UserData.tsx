@@ -19,7 +19,7 @@ export const fetchUserData = async (uid: string): Promise<UserData | null> => {
         createdAt: userData.createdAt ? userData.createdAt.toDate() : new Date(), 
         bio: userData.bio || '',
         userId: uid,
-        photoUrl: userData.photoUrl || ''
+        photoUrl: userData.photoUrl 
       } as UserData;
     } else {
       console.log('No such document.');
