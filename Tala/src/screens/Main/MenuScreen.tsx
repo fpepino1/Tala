@@ -5,7 +5,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParamList } from '../../navigation/types';
 import { useNavigation } from '@react-navigation/native';
 import Icon from "react-native-vector-icons/Ionicons";
-import { updateUserActivity } from '../Main/functions';
+import { updateUserActivity } from './functions';
 import sendEmail  from 'react-native-email';
 
 export default function MenuScreen() {
